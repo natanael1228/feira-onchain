@@ -6,8 +6,6 @@
 <title>Feira Onchain — O Marketplace Global Descentralizado</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-section,.hero{scroll-margin-top:110px}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#0a1628;color:#fff;line-height:1.6}
 :root{--gold:#d4af37;--gold-light:#f4d47c;--blue:#0a2540;--blue-light:#143a63}
 header{background:linear-gradient(135deg,#071224 0%,#0a2540 50%,#143a63 100%);padding:20px;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100}
@@ -52,12 +50,31 @@ footer{background:#050c18;text-align:center;padding:30px;color:#8a9bb5;border-to
 <section id="vantagens">
 <h2>Por que a Feira Onchain?</h2>
 <div class="cards">
-<div class="card"><div class="icon">🔒</div><h3>100% Seguro</h3><p>Transações protegidas por contratos inteligentes.</p></div>
-<div class="card"><div class="icon">🌍</div><h3>Alcance Global</h3><p>Venda para clientes em qualquer país.</p></div>
-<div class="card"><div class="icon">💰</div><h3>Taxas Baixas</h3><p>Vendedores mantêm até 98% do lucro.</p></div>
-<div class="card"><div class="icon">⚡</div><h3>Pagamentos Instantâneos</h3><p>Receba na hora, direto na sua carteira.</p></div>
-<div class="card"><div class="icon">⭐</div><h3>Reputação Onchain</h3><p>Avaliações registradas na blockchain.</p></div>
-<div class="card"><div class="icon">🛡️</div><h3>Sem Censura</h3><p>Sua loja, suas regras.</p></div>
+<div class="card"><div class="icon">🔒</div><h3>100% Seguro</h3><p>Transações protegidas por contratos inteligentes. Seu dinheiro só é liberado quando você recebe o produto.</p></div>
+<div class="card"><div class="icon">🌍</div><h3>Alcance Global</h3><p>Venda para clientes em qualquer país. Pagamentos em cripto, sem burocracia bancária e sem fronteiras.</p></div>
+<div class="card"><div class="icon">💰</div><h3>Taxas Baixas</h3><p>Sem intermediários abusivos. Vendedores mantêm até 98% do lucro. Transparência total nas taxas.</p></div>
+<div class="card"><div class="icon">⚡</div><h3>Pagamentos Instantâneos</h3><p>Receba na hora, direto na sua carteira. Sem espera de 30 dias como nos marketplaces tradicionais.</p></div>
+<div class="card"><div class="icon">⭐</div><h3>Reputação Onchain</h3><p>Avaliações registradas na blockchain. Impossível falsificar. Confiança verdadeira entre as partes.</p></div>
+<div class="card"><div class="icon">🛡️</div><h3>Sem Censura</h3><p>Sua loja, suas regras. Ninguém pode derrubar seu negócio ou bloquear seus fundos arbitrariamente.</p></div>
+</div>
+</section>
+
+<div class="trust"><section>
+<h2>Transparência e Profissionalismo</h2>
+<p style="text-align:center;color:#c9d6e8;max-width:800px;margin:auto">A Feira Onchain foi construída sobre os pilares da Web3: descentralização, transparência e autonomia. Cada transação é auditável, cada vendedor é verificado pela comunidade e cada comprador tem garantia real.</p>
+<div class="stats">
+<div class="stat"><h3>150+</h3><p>Países alcançados</p></div>
+<div class="stat"><h3>24/7</h3><p>Marketplace sempre aberto</p></div>
+<div class="stat"><h3>0</h3><p>Intermediários</p></div>
+</div>
+</section></div>
+
+<section id="como">
+<h2>Como Funciona</h2>
+<div class="cards">
+<div class="card"><div class="icon">1️⃣</div><h3>Conecte sua Carteira</h3><p>Use MetaMask ou qualquer carteira Web3. Leva menos de 1 minuto, sem cadastro complicado.</p></div>
+<div class="card"><div class="icon">2️⃣</div><h3>Anuncie ou Compre</h3><p>Vendedores criam sua loja grátis. Compradores navegam e pagam com segurança total.</p></div>
+<div class="card"><div class="icon">3️⃣</div><h3>Receba com Segurança</h3><p>Contrato inteligente segura o pagamento até a entrega ser confirmada. Justo para todos.</p></div>
 </div>
 </section>
 
@@ -71,21 +88,72 @@ footer{background:#050c18;text-align:center;padding:30px;color:#8a9bb5;border-to
 <button type="submit" class="btn" style="font-size:18px;padding:14px 30px;width:100%">Criar Minha Loja Grátis</button>
 </form>
 <p id="msg-loja" style="margin-top:15px;color:var(--gold-light);font-weight:700"></p>
+<p style="margin-top:10px;color:#8a9bb5;font-size:14px">✅ Sem cartão de crédito &nbsp; ✅ Leva 5 minutos</p>
+</div>
+</section>
+
+<section id="minha-loja" style="display:none">
+<div class="cta">
+<h2 id="titulo-loja">🏪 Minha Loja</h2>
+<p style="color:#c9d6e8">Cadastre seus produtos abaixo:</p>
+<form id="form-produto" style="max-width:400px;margin:20px auto 0;text-align:left">
+<input id="nome-produto" type="text" placeholder="Nome do produto" required style="width:100%;padding:14px;border-radius:10px;border:1px solid var(--gold);margin-bottom:12px;background:#0a1628;color:#fff">
+<input id="preco-produto" type="number" step="0.01" min="0" placeholder="Preço (ex: 29.90)" required style="width:100%;padding:14px;border-radius:10px;border:1px solid var(--gold);margin-bottom:12px;background:#0a1628;color:#fff">
+<button type="submit" class="btn" style="font-size:18px;padding:14px 30px;width:100%">Adicionar Produto</button>
+</form>
+<div id="lista-produtos" style="max-width:400px;margin:25px auto 0;text-align:left"></div>
 </div>
 </section>
 <script>
+function mostrarProdutos(){
+var lista = JSON.parse(localStorage.getItem('produtos')||'[]');
+var box = document.getElementById('lista-produtos');
+box.innerHTML = '';
+lista.forEach(function(p,i){
+var d = document.createElement('div');
+d.style.cssText = 'background:#0a1628;border:1px solid var(--gold);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center';
+d.innerHTML = '<span><strong style="color:var(--gold-light)">'+p.nome+'</strong><br><span style="color:#c9d6e8">R$ '+p.preco+'</span></span><button onclick="removerProduto('+i+')" style="background:none;border:none;color:#ff6b6b;font-size:18px;cursor:pointer">🗑️</button>';
+box.appendChild(d);
+});
+}
+function removerProduto(i){
+var lista = JSON.parse(localStorage.getItem('produtos')||'[]');
+lista.splice(i,1);
+localStorage.setItem('produtos', JSON.stringify(lista));
+mostrarProdutos();
+}
 document.getElementById('form-loja').addEventListener('submit', function(e){
 e.preventDefault();
 var nome = document.getElementById('nome-loja').value;
 localStorage.setItem('minha_loja', nome);
 document.getElementById('msg-loja').textContent = '🎉 Loja "' + nome + '" criada com sucesso!';
+document.getElementById('titulo-loja').textContent = '🏪 ' + nome;
+document.getElementById('minha-loja').style.display = 'block';
+document.getElementById('minha-loja').scrollIntoView({behavior:'smooth'});
 this.reset();
 });
+document.getElementById('form-produto').addEventListener('submit', function(e){
+e.preventDefault();
+var lista = JSON.parse(localStorage.getItem('produtos')||'[]');
+lista.push({nome: document.getElementById('nome-produto').value, preco: document.getElementById('preco-produto').value});
+localStorage.setItem('produtos', JSON.stringify(lista));
+mostrarProdutos();
+this.reset();
+});
+(function(){
+var loja = localStorage.getItem('minha_loja');
+if(loja){
+document.getElementById('titulo-loja').textContent = '🏪 ' + loja;
+document.getElementById('minha-loja').style.display = 'block';
+mostrarProdutos();
+}
+})();
 </script>
 
 <footer>
 <p style="color:var(--gold);font-weight:800;font-size:20px;margin-bottom:10px">⬢ FEIRA ONCHAIN</p>
 <p>O futuro do comércio é descentralizado.</p>
+<p style="margin-top:15px;font-size:13px">© 2026 Feira Onchain. Todos os direitos reservados.</p>
 </footer>
 </body>
 </html>
