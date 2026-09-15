@@ -52,47 +52,40 @@ footer{background:#050c18;text-align:center;padding:30px;color:#8a9bb5;border-to
 <section id="vantagens">
 <h2>Por que a Feira Onchain?</h2>
 <div class="cards">
-<div class="card"><div class="icon">🔒</div><h3>100% Seguro</h3><p>Transações protegidas por contratos inteligentes. Seu dinheiro só é liberado quando você recebe o produto.</p></div>
-<div class="card"><div class="icon">🌍</div><h3>Alcance Global</h3><p>Venda para clientes em qualquer país. Pagamentos em cripto, sem burocracia bancária e sem fronteiras.</p></div>
-<div class="card"><div class="icon">💰</div><h3>Taxas Baixas</h3><p>Sem intermediários abusivos. Vendedores mantêm até 98% do lucro. Transparência total nas taxas.</p></div>
-<div class="card"><div class="icon">⚡</div><h3>Pagamentos Instantâneos</h3><p>Receba na hora, direto na sua carteira. Sem espera de 30 dias como nos marketplaces tradicionais.</p></div>
-<div class="card"><div class="icon">⭐</div><h3>Reputação Onchain</h3><p>Avaliações registradas na blockchain. Impossível falsificar. Confiança verdadeira entre as partes.</p></div>
-<div class="card"><div class="icon">🛡️</div><h3>Sem Censura</h3><p>Sua loja, suas regras. Ninguém pode derrubar seu negócio ou bloquear seus fundos arbitrariamente.</p></div>
-</div>
-</section>
-
-<div class="trust"><section>
-<h2>Transparência e Profissionalismo</h2>
-<p style="text-align:center;color:#c9d6e8;max-width:800px;margin:auto">A Feira Onchain foi construída sobre os pilares da Web3: descentralização, transparência e autonomia. Cada transação é auditável, cada vendedor é verificado pela comunidade e cada comprador tem garantia real.</p>
-<div class="stats">
-<div class="stat"><h3>150+</h3><p>Países alcançados</p></div>
-<div class="stat"><h3>24/7</h3><p>Marketplace sempre aberto</p></div>
-<div class="stat"><h3>0</h3><p>Intermediários</p></div>
-</div>
-</section></div>
-
-<section id="como">
-<h2>Como Funciona</h2>
-<div class="cards">
-<div class="card"><div class="icon">1️⃣</div><h3>Conecte sua Carteira</h3><p>Use MetaMask ou qualquer carteira Web3. Leva menos de 1 minuto, sem cadastro complicado.</p></div>
-<div class="card"><div class="icon">2️⃣</div><h3>Anuncie ou Compre</h3><p>Vendedores criam sua loja grátis. Compradores navegam e pagam com segurança total.</p></div>
-<div class="card"><div class="icon">3️⃣</div><h3>Receba com Segurança</h3><p>Contrato inteligente segura o pagamento até a entrega ser confirmada. Justo para todos.</p></div>
+<div class="card"><div class="icon">🔒</div><h3>100% Seguro</h3><p>Transações protegidas por contratos inteligentes.</p></div>
+<div class="card"><div class="icon">🌍</div><h3>Alcance Global</h3><p>Venda para clientes em qualquer país.</p></div>
+<div class="card"><div class="icon">💰</div><h3>Taxas Baixas</h3><p>Vendedores mantêm até 98% do lucro.</p></div>
+<div class="card"><div class="icon">⚡</div><h3>Pagamentos Instantâneos</h3><p>Receba na hora, direto na sua carteira.</p></div>
+<div class="card"><div class="icon">⭐</div><h3>Reputação Onchain</h3><p>Avaliações registradas na blockchain.</p></div>
+<div class="card"><div class="icon">🛡️</div><h3>Sem Censura</h3><p>Sua loja, suas regras.</p></div>
 </div>
 </section>
 
 <section id="vendedores">
 <div class="cta">
 <h2>🚀 Vendedores: Expanda para o Mundo</h2>
-<p style="color:#c9d6e8;margin:15px 0 25px;max-width:600px;margin-left:auto;margin-right:auto">Cadastre sua loja gratuitamente hoje. Sem mensalidade. Sem burocracia. Alcance milhões de clientes globais que buscam produtos autênticos e vendedores confiáveis.</p>
-<a href="#" class="btn" style="font-size:20px;padding:16px 40px">Criar Minha Loja Grátis</a>
-<p style="margin-top:15px;color:#8a9bb5;font-size:14px">✅ Sem cartão de crédito &nbsp; ✅ Leva 5 minutos &nbsp; ✅ Suporte em português</p>
+<p style="color:#c9d6e8;margin:15px 0 25px;max-width:600px;margin-left:auto;margin-right:auto">Cadastre sua loja gratuitamente hoje. Sem mensalidade. Sem burocracia.</p>
+<form id="form-loja" style="max-width:400px;margin:0 auto;text-align:left">
+<input id="nome-loja" type="text" placeholder="Nome da sua loja" required style="width:100%;padding:14px;border-radius:10px;border:1px solid var(--gold);margin-bottom:12px;background:#0a1628;color:#fff">
+<input id="email-loja" type="email" placeholder="Seu e-mail" required style="width:100%;padding:14px;border-radius:10px;border:1px solid var(--gold);margin-bottom:12px;background:#0a1628;color:#fff">
+<button type="submit" class="btn" style="font-size:18px;padding:14px 30px;width:100%">Criar Minha Loja Grátis</button>
+</form>
+<p id="msg-loja" style="margin-top:15px;color:var(--gold-light);font-weight:700"></p>
 </div>
 </section>
+<script>
+document.getElementById('form-loja').addEventListener('submit', function(e){
+e.preventDefault();
+var nome = document.getElementById('nome-loja').value;
+localStorage.setItem('minha_loja', nome);
+document.getElementById('msg-loja').textContent = '🎉 Loja "' + nome + '" criada com sucesso!';
+this.reset();
+});
+</script>
 
 <footer>
 <p style="color:var(--gold);font-weight:800;font-size:20px;margin-bottom:10px">⬢ FEIRA ONCHAIN</p>
 <p>O futuro do comércio é descentralizado.</p>
-<p style="margin-top:15px;font-size:13px">© 2026 Feira Onchain. Todos os direitos reservados.</p>
 </footer>
 </body>
 </html>
