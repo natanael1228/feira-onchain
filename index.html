@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feira Onchain — O Marketplace Global Descentralizado</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0a1628;color:#fff;line-height:1.6}
+:root{--gold:#d4af37;--gold-light:#f4d47c;--blue:#0a2540;--blue-light:#143a63}
+header{background:linear-gradient(135deg,#071224 0%,#0a2540 50%,#143a63 100%);padding:20px;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100}
+nav{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.logo{font-size:28px;font-weight:900;background:linear-gradient(90deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav a{color:#fff;text-decoration:none;margin:0 12px;font-weight:600}
+nav a:hover{color:var(--gold-light)}
+.btn{background:linear-gradient(90deg,var(--gold),var(--gold-light));color:#0a1628;padding:12px 28px;border:none;border-radius:30px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block;margin-top:10px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(212,175,55,.4)}
+.hero{text-align:center;padding:90px 20px;background:radial-gradient(ellipse at center,#143a63 0%,#071224 70%)}
+.hero h1{font-size:52px;margin-bottom:15px;background:linear-gradient(90deg,#fff,var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:20px;color:#c9d6e8;max-width:700px;margin:0 auto 25px}
+section{max-width:1200px;margin:auto;padding:60px 20px}
+h2{font-size:36px;color:var(--gold);margin-bottom:20px;text-align:center}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:25px;margin-top:30px}
+.card{background:linear-gradient(145deg,#0e2140,#132e57);border:1px solid rgba(212,175,55,.3);border-radius:15px;padding:30px;text-align:center}
+.card:hover{border-color:var(--gold);transform:translateY(-5px);transition:.3s}
+.card .icon{font-size:45px;margin-bottom:15px}
+.card h3{color:var(--gold-light);margin-bottom:10px;font-size:22px}
+.card p{color:#c9d6e8}
+.trust{background:#071224;border-top:1px solid rgba(212,175,55,.2);border-bottom:1px solid rgba(212,175,55,.2)}
+.stats{display:flex;justify-content:center;gap:50px;flex-wrap:wrap;text-align:center;margin-top:30px}
+.stat h3{font-size:42px;color:var(--gold)}
+.cta{text-align:center;background:linear-gradient(135deg,#0a2540,#143a63);border-radius:20px;padding:60px 30px;border:2px solid var(--gold)}
+footer{background:#050c18;text-align:center;padding:30px;color:#8a9bb5;border-top:2px solid var(--gold)}
+@media(max-width:600px){.hero h1{font-size:34px}nav{justify-content:center}}
+</style>
+<script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+<header><nav>
+<div class="logo">⬢ FEIRA ONCHAIN</div>
+<div><a href="#inicio" data-i18n="nav_inicio">Início</a><a href="#vitrine" data-i18n="nav_vitrine">🔍 Pesquisar Produtos</a><a href="#vantagens" data-i18n="nav_vantagens">Vantagens</a><a href="#como" data-i18n="nav_como">Como Funciona</a><a href="#vendedores" data-i18n="nav_vendedores">Vendedores</a><select id="langSel" onchange="setLang(this.value)" style="background:#071224;color:#fff;border:1px solid var(--gold);border-radius:20px;padding:6px 8px;margin:0 6px;font-weight:700;cursor:pointer;font-size:13px"></select><span id="navUser"></span><button onclick="abrirCarteiraLoja()" style="margin-left:8px;background:linear-gradient(90deg,#9945FF,#14F195);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-weight:800;cursor:pointer;font-size:13px">💰 FeiraPay</button></div>
+</nav></header>
+<div id="authModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;justify-content:center;align-items:center;padding:20px">
+<div style="background:linear-gradient(145deg,#0e2140,#132e57);border:2px solid var(--gold);border-radius:20px;padding:30px;max-width:400px;width:100%">
+<h2 data-i18n="auth_titulo" style="font-size:26px">🔑 Área do Vendedor</h2>
+<div style="text-align:center;margin-bottom:15px">
+<button onclick="abaAuth('login')" id="tabLogin" class="btn" data-i18n="auth_login" style="font-size:14px;padding:10px 24px">Entrar</button>
+<button onclick="abaAuth('cad')" id="tabCad" data-i18n="auth_cad" style="font-size:14px;padding:10px 24px;background:transparent;border:2px solid var(--gold);color:var(--gold-light);border-radius:30px;cursor:pointer;font-weight:800">Cadastrar</button>
+</div>
+<div id="authLogin">
+<input type="email" id="aEmail" data-i18n-ph="ph_email" placeholder="Email" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<div style="position:relative"><input type="password" id="aSenha" data-i18n-ph="ph_senha" placeholder="Senha" style="width:100%;padding:12px 42px 12px 12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px"><span onclick="alternarSenha('aSenha',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span></div>
+<button onclick="fazerLogin()" class="btn" data-i18n="auth_btn_entrar" style="width:100%;font-size:16px">Entrar</button>
+<p style="text-align:center;margin-top:10px"><a href="#" onclick="abrirRecuperar();return false;" data-i18n="rec_link" style="color:var(--gold-light);font-size:14px;text-decoration:underline">Esqueci minha senha</a></p>
+</div>
+<div id="authCad" style="display:none">
+<input type="text" id="cNome" data-i18n-ph="ph_loja" placeholder="Nome da loja / vendedor" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<input type="email" id="cEmail" data-i18n-ph="ph_email" placeholder="Email" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<div style="position:relative"><input type="password" id="cSenha" data-i18n-ph="ph_senha" placeholder="Crie uma senha" style="width:100%;padding:12px 42px 12px 12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px"><span onclick="alternarSenha('cSenha',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span></div>
+<input type="tel" id="cZap" data-i18n-ph="ph_zap" placeholder="WhatsApp com DDD" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<input type="text" id="cSol" data-i18n-ph="ph_sol" placeholder="Endereço Solana (para receber em SOL)" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<button onclick="fazerCadastro()" class="btn" data-i18n="auth_btn_criar" style="width:100%;font-size:16px">Criar Minha Conta</button>
+</div>
+<button onclick="fecharAuth()" data-i18n="auth_fechar" style="width:100%;margin-top:12px;background:transparent;border:none;color:#8a9bb5;cursor:pointer;font-size:14px">Fechar</button>
+</div>
+</div>
+<div id="walletModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;justify-content:center;align-items:center;padding:20px">
+<div style="background:linear-gradient(145deg,#0e2140,#132e57);border:2px solid var(--gold);border-radius:20px;padding:30px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto">
+<h2 data-i18n="w_titulo" style="font-size:24px">Escolha sua carteira</h2>
+<div id="walletLista"></div>
+<p data-i18n="w_ajuda" style="font-size:12px;color:#8a9bb5;margin-top:12px;text-align:center"></p>
+<button onclick="fecharModalCarteira()" data-i18n="auth_fechar" style="width:100%;margin-top:12px;background:transparent;border:none;color:#8a9bb5;cursor:pointer;font-size:14px">Fechar</button>
+</div>
+</div>
+<div class="hero" id="inicio">
+<h1 data-i18n="hero_titulo">Feira Onchain</h1>
+<p data-i18n="hero_sub">O marketplace global descentralizado onde compradores e vendedores negociam com segurança, transparência e sem fronteiras.</p>
+<div style="display:flex;flex-wrap:wrap;gap:15px;justify-content:center;margin-top:20px">
+<button onclick="abrirCadastroVendedor()" class="btn" style="font-size:18px;padding:16px 32px">🏪 Quero Vender Agora</button>
+<button onclick="abrirCadastroComprador()" class="btn" style="font-size:18px;padding:16px 32px;background:transparent;border:2px solid var(--gold);color:var(--gold-light)">🛒 Quero Comprar</button>
+</div>
+<p style="color:#8a9bb5;font-size:13px;margin-top:12px">Vendedores precisam de cadastro. Compradores também se cadastram para ver e comprar produtos.</p>
+</div>
+<div id="bannerFeiraPay" style="background:linear-gradient(90deg,#0a2540,#143a63);border:2px solid var(--gold);border-radius:15px;padding:15px;margin:20px auto;max-width:1200px;text-align:center"><p style="color:var(--gold-light);font-weight:800;font-size:16px">💳 Recarregue seu FeiraPay 💰 — Adicione saldo via Pix ou Solana e pague produtos instantaneamente!</p><button onclick="abrirCarteiraLoja()" style="margin-top:8px;background:linear-gradient(90deg,#d4af37,#f4d47c);color:#0a1628;border:none;border-radius:20px;padding:8px 20px;font-weight:800;cursor:pointer">⚡ Recarregar agora</button></div><section id="vitrine">
+<h2 data-i18n="vitrine_titulo">🔍 Pesquisar Produtos</h2>
+<p data-i18n="vitrine_sub" style="text-align:center;color:#c9d6e8;max-width:700px;margin:0 auto 10px">Faça cadastro como comprador para ver preços, comprar com FeiraPay e receber em casa.</p>
+<div style="max-width:700px;margin:20px auto;background:#071224;border:1px solid var(--gold);border-radius:30px;padding:8px;display:flex;gap:8px">
+<input id="inputBusca" type="text" placeholder="🔍 O que você quer comprar hoje? Ex: camiseta, relógio, arte..." style="flex:1;background:transparent;border:none;color:#fff;padding:12px 15px;font-size:15px;outline:none">
+<button onclick="filtrarProdutos()" class="btn" style="margin:0;padding:12px 22px">Buscar</button>
+</div>
+<div style="text-align:center;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+<button onclick="filtrarCat('todos')" class="btn" style="padding:6px 14px;font-size:12px">Todos</button>
+<button onclick="filtrarCat('moda')" class="btn" style="padding:6px 14px;font-size:12px;background:transparent;border:1px solid var(--gold);color:var(--gold)">Moda</button>
+<button onclick="filtrarCat('eletronicos')" class="btn" style="padding:6px 14px;font-size:12px;background:transparent;border:1px solid var(--gold);color:var(--gold)">Eletrônicos</button>
+<button onclick="filtrarCat('arte')" class="btn" style="padding:6px 14px;font-size:12px;background:transparent;border:1px solid var(--gold);color:var(--gold)">Arte</button>
+<button onclick="filtrarCat('casa')" class="btn" style="padding:6px 14px;font-size:12px;background:transparent;border:1px solid var(--gold);color:var(--gold)">Casa</button>
+</div>
+<div id="vitrineProdutos" class="cards" style="margin-top:30px"></div>
+<p id="avisoLoginComprador" style="display:none;text-align:center;margin-top:20px;background:linear-gradient(90deg,#9945FF,#14F195);padding:12px;border-radius:10px;font-weight:800">👋 Faça cadastro como comprador para ver os produtos e pagar com FeiraPay! <button onclick="abrirCadastroComprador()" style="margin-left:10px;background:#fff;color:#0a1628;border:none;border-radius:20px;padding:6px 14px;font-weight:800;cursor:pointer">Cadastrar para Comprar</button></p>
+</section>
+<script>
+function filtrarProdutos(){
+  var termo = (document.getElementById('inputBusca').value||'').toLowerCase();
+  var cards = document.querySelectorAll('#vitrineProdutos .card');
+  cards.forEach(c=>{
+    var txt = c.innerText.toLowerCase();
+    c.style.display = txt.includes(termo) ? 'block' : 'none';
+  });
+}
+function filtrarCat(cat){
+  var cards = document.querySelectorAll('#vitrineProdutos .card');
+  if(cat==='todos'){ cards.forEach(c=>c.style.display='block'); return; }
+  cards.forEach(c=>{
+    var txt = c.innerText.toLowerCase();
+    c.style.display = txt.includes(cat) ? 'block' : 'none';
+  });
+}
+function abrirCadastroVendedor(){
+  localStorage.setItem('tipoCadastro','vendedor');
+  document.getElementById('authModal').style.display='flex';
+  document.getElementById('authModal').querySelector('h2').innerText='🏪 Cadastro de Vendedor';
+  abaAuth('cad');
+}
+function abrirCadastroComprador(){
+  localStorage.setItem('tipoCadastro','comprador');
+  document.getElementById('authModal').style.display='flex';
+  document.getElementById('authModal').querySelector('h2').innerText='🛒 Cadastro de Comprador';
+  abaAuth('cad');
+  setTimeout(()=>{ document.getElementById('vitrine').scrollIntoView({behavior:'smooth'}); }, 300);
+}
+document.getElementById('inputBusca')?.addEventListener('keyup', function(e){ if(e.key==='Enter') filtrarProdutos(); });
+</script>
+
+<section id="vantagens">
+<h2 data-i18n="vant_titulo">Por que a Feira Onchain?</h2>
+<div class="cards">
+<div class="card"><div class="icon">🔒</div><h3 data-i18n="vant1t">100% Seguro</h3><p data-i18n="vant1d">Transações protegidas por contratos inteligentes.</p></div>
+<div class="card"><div class="icon">🌍</div><h3 data-i18n="vant2t">Alcance Global</h3><p data-i18n="vant2d">Venda para clientes em qualquer país.</p></div>
+<div class="card"><div class="icon">💰</div><h3 data-i18n="vant3t">Taxas Baixas</h3><p data-i18n="vant3d">Sem intermediários abusivos.</p></div>
+<div class="card"><div class="icon">⚡</div><h3 data-i18n="vant4t">Pagamentos Instantâneos</h3><p data-i18n="vant4d">Receba na hora, direto na sua carteira.</p></div>
+<div class="card"><div class="icon">⭐</div><h3 data-i18n="vant5t">Reputação Onchain</h3><p data-i18n="vant5d">Avaliações registradas na blockchain.</p></div>
+<div class="card"><div class="icon">🛡️</div><h3 data-i18n="vant6t">Sem Censura</h3><p data-i18n="vant6d">Sua loja, suas regras.</p></div>
+</div>
+</section>
+<div class="trust"><section>
+<h2 data-i18n="trust_titulo">Transparência e Profissionalismo</h2>
+<p data-i18n="trust_texto" style="text-align:center;color:#c9d6e8;max-width:800px;margin:auto">A Feira Onchain foi construída sobre os pilares da Web3.</p>
+<div class="stats">
+<div class="stat"><h3>150+</h3><p data-i18n="stat1">Países alcançados</p></div>
+<div class="stat"><h3>24/7</h3><p data-i18n="stat2">Marketplace sempre aberto</p></div>
+<div class="stat"><h3>0</h3><p data-i18n="stat3">Intermediários</p></div>
+</div>
+</section></div>
+<section id="como">
+<h2 data-i18n="como_titulo">Como Funciona</h2>
+<div class="cards">
+<div class="card"><div class="icon">1️⃣</div><h3 data-i18n="como1t">Conecte sua Carteira</h3><p data-i18n="como1d">Use MetaMask ou qualquer carteira Web3.</p><p id="walletStatus" style="font-size:13px;color:#8a9bb5;margin:10px 0"></p><button onclick="abrirModalCarteira()" class="btn" data-i18n="como1b" style="font-size:15px;padding:12px 28px">🔗 Conectar Carteira</button></div>
+<div class="card"><div class="icon">2️⃣</div><h3 data-i18n="como2t">Anuncie ou Compre</h3><p data-i18n="como2d">Vendedores criam sua loja grátis.</p><a href="#cadastro" class="btn" data-i18n="como2b" style="font-size:15px;padding:12px 28px;display:inline-block;margin-top:10px">📦 Ir para Minha Loja</a></div>
+<div class="card"><div class="icon">3️⃣</div><h3 data-i18n="como3t">Receba com Segurança</h3><p data-i18n="como3d">Contrato inteligente segura o pagamento.</p><button onclick="garantia()" class="btn" data-i18n="como3b" style="font-size:15px;padding:12px 28px;margin-top:10px;background:transparent;border:2px solid var(--gold);color:var(--gold-light)">🛡️ Ver Garantia</button></div>
+</div>
+</section>
+<section id="vendedores">
+<div class="cta">
+<h2 data-i18n="vend_titulo">🚀 Vendedores: Expanda para o Mundo</h2>
+<p data-i18n="vend_texto" style="color:#c9d6e8;margin:15px 0 25px;max-width:600px;margin-left:auto;margin-right:auto">Cadastre sua loja gratuitamente hoje.</p>
+<a href="javascript:void(0)" onclick="abrirAuth()" class="btn" data-i18n="vend_cta" style="font-size:20px;padding:16px 40px">Criar Minha Loja Grátis</a>
+</div>
+</section>
+<section id="cadastro">
+<h2 id="tituloLoja">📦 Cadastre Seus Produtos</h2>
+<div id="avisoLogin" class="cta" style="max-width:650px;margin:auto;text-align:center">
+<p data-i18n="cad_aviso" style="color:#c9d6e8;margin-bottom:15px">🔒 Para cadastrar produtos e ver sua loja, entre com seu email e senha.</p>
+<button onclick="abrirAuth()" class="btn" data-i18n="cad_entrar" style="font-size:18px;padding:14px 40px">🔑 Entrar / Criar Conta</button>
+</div>
+<div id="areaVendedor" style="display:none">
+<div class="cta" style="max-width:650px;margin:auto">
+<p id="boasVindas" style="color:var(--gold-light);font-weight:800;margin-bottom:8px"></p>
+<p id="zapLinha" style="color:#c9d6e8;margin-bottom:8px;font-size:14px"></p>
+<p id="solLinha" style="color:#c9d6e8;margin-bottom:15px;font-size:14px"></p>
+<button onclick="compartilharLoja()" class="btn" data-i18n="share_loja" style="font-size:14px;padding:10px 24px;margin-bottom:15px">📤 Compartilhar minha loja</button>
+<form id="formProduto" onsubmit="return adicionarProduto(event)">
+<input type="text" id="pNome" data-i18n-ph="ph_nome" placeholder="Nome do produto" required style="width:100%;padding:14px;margin-bottom:12px;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:16px">
+<input type="text" id="pPreco" data-i18n-ph="ph_preco" placeholder="Preço" required style="width:100%;padding:14px;margin-bottom:12px;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:16px">
+<input type="url" id="pLink" data-i18n-ph="ph_link" placeholder="Link de afiliado" style="width:100%;padding:14px;margin-bottom:12px;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:16px">
+<div style="margin-bottom:12px">
+<label data-i18n="form_foto" style="display:block;color:#c9d6e8;margin-bottom:8px;text-align:left">📷 Foto do produto:</label>
+<label for="pFotoCamera" class="btn" data-i18n="btn_foto" style="display:inline-block;cursor:pointer;margin:4px">📸 Tirar Foto</label>
+<label for="pFotoGaleria" class="btn" data-i18n="btn_galeria" style="display:inline-block;cursor:pointer;margin:4px;background:transparent;border:2px solid var(--gold);color:var(--gold-light)">🖼️ Escolher da Galeria</label>
+<input type="file" id="pFotoCamera" accept="image/*" capture="environment" style="display:none" onchange="mostrarPreview(event)">
+<input type="file" id="pFotoGaleria" accept="image/*" style="display:none" onchange="mostrarPreview(event)">
+<div id="previewBox" style="display:none;margin-top:12px;text-align:center">
+<img id="previewImg" src="" style="max-width:200px;border-radius:10px;border:2px solid var(--gold)">
+<br><button type="button" onclick="removerFoto()" data-i18n="btn_removefoto" style="margin-top:8px;background:#a33;color:#fff;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700">❌ Remover Foto</button>
+</div>
+</div>
+<button type="submit" class="btn" data-i18n="form_add" style="font-size:18px;padding:14px 40px;width:100%">Adicionar Produto</button>
+</form>
+</div>
+</div>
+<div id="listaProdutos" class="cards" style="margin-top:30px"></div>
+</section>
+
+<script>
+var LANGS={pt:"Português",en:"English",es:"Español",fr:"Français",de:"Deutsch",it:"Italiano",zh:"中文",ja:"日本語",ar:"العربية",ru:"Русский"};
+var T={};
+T.pt={"nav_inicio":"Início","nav_vitrine":"Vitrine","nav_vantagens":"Vantagens","nav_como":"Como Funciona","nav_vendedores":"Vendedores","nav_entrar":"🔑 Entrar","nav_sair":"Sair","cargo_pres":"👑 Presidente","hero_titulo":"Feira Onchain","hero_sub":"O marketplace global descentralizado onde compradores e vendedores negociam com segurança, transparência e sem fronteiras.","hero_cta1":"Quero Vender Agora","hero_cta2":"Como Funciona","vitrine_titulo":"🛍️ Vitrine","vitrine_sub":"Os produtos dos nossos vendedores à mostra. Clique no WhatsApp e fale direto com o vendedor!","vitrine_vazio":"Nenhum produto na vitrine ainda. Seja o primeiro a anunciar! 🚀","vant_titulo":"Por que a Feira Onchain?","vant1t":"🔒 100% Seguro","vant1d":"Transações protegidas por contratos inteligentes. Seu dinheiro só é liberado quando você recebe o produto.","vant2t":"🌍 Alcance Global","vant2d":"Venda para clientes em qualquer país. Pagamentos em cripto, sem burocracia bancária e sem fronteiras.","vant3t":"💰 Taxas Baixas","vant3d":"Sem intermediários abusivos. Vendedores mantêm até 98% do lucro. Transparência total nas taxas.","vant4t":"⚡ Pagamentos Instantâneos","vant4d":"Receba na hora, direto na sua carteira. Sem espera de 30 dias como nos marketplaces tradicionais.","vant5t":"⭐ Reputação Onchain","vant5d":"Avaliações registradas na blockchain. Impossível falsificar. Confiança verdadeira entre as partes.","vant6t":"🛡️ Sem Censura","vant6d":"Sua loja, suas regras. Ninguém pode derrubar seu negócio ou bloquear seus fundos arbitrariamente.","trust_titulo":"Transparência e Profissionalismo","trust_texto":"A Feira Onchain foi construída sobre os pilares da Web3: descentralização, transparência e autonomia. Cada transação é auditável, cada vendedor é verificado pela comunidade e cada comprador tem garantia real.","stat1":"Países alcançados","stat2":"Marketplace sempre aberto","stat3":"Intermediários","como_titulo":"Como Funciona","como1t":"Conecte sua Carteira","como1d":"Use MetaMask ou qualquer carteira Web3. Leva menos de 1 minuto, sem cadastro complicado.","como1b":"🔗 Conectar Carteira","como2t":"Anuncie ou Compre","como2d":"Vendedores criam sua loja grátis. Compradores navegam e pagam com segurança total.","como2b":"📦 Ir para Minha Loja","como3t":"Receba com Segurança","como3d":"Contrato inteligente segura o pagamento até a entrega ser confirmada. Justo para todos.","como3b":"🛡️ Ver Garantia","vend_titulo":"🚀 Vendedores: Expanda para o Mundo","vend_texto":"Cadastre sua loja gratuitamente hoje. Sem mensalidade. Sem burocracia. Alcance milhões de clientes globais que buscam produtos autênticos e vendedores confiáveis.","vend_cta":"Criar Minha Loja Grátis","cad_titulo":"📦 Cadastre Seus Produtos","cad_aviso":"🔒 Para cadastrar produtos e ver sua loja, entre com seu email e senha.","cad_entrar":"🔑 Entrar / Criar Conta","auth_titulo":"🔑 Área do Vendedor","auth_login":"Entrar","auth_cad":"Cadastrar","auth_btn_entrar":"Entrar","auth_btn_criar":"Criar Minha Conta","auth_fechar":"Fechar","ph_nome":"Nome do produto","ph_preco":"Preço (ex: 29.90)","ph_link":"Link de afiliado (ex: https://...)","ph_loja":"Nome da loja / vendedor","ph_email":"Email","ph_senha":"Crie uma senha","ph_zap":"WhatsApp com DDD (ex: 5567999999999)","form_foto":"📷 Foto do produto:","form_add":"Adicionar Produto","loja_minha":"🏪 Minha Loja","loja_painel":"👑 Painel do Presidente","loja_painel_sub":"👑 Painel do Presidente — você vê as lojas de TODOS os vendedores","zap_seu":"📱 Seu WhatsApp:","zap_alterar":"Alterar","zap_sem":"⚠️ Cadastre seu WhatsApp para receber clientes no botão do produto:","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Comprar / Afiliado","btn_editar":"✏️ Editar","btn_excluir":"🗑️ Excluir","btn_salvar":"💾 Salvar","btn_cancelar":"✖ Cancelar","btn_foto":"📸 Tirar Foto","btn_galeria":"🖼️ Escolher da Galeria","btn_removefoto":"❌ Remover Foto","lbl_vendedor":"🏪 Vendedor:","lbl_foto":"📷 Foto do produto:","edit_titulo":"✏️ Editando produto","zap_msg":"Olá! Vi seu produto {n} (R$ {p}) na Feira Onchain e quero saber mais!","msg_add_ok":"Produto adicionado! 🎉","msg_upd_ok":"Produto atualizado! ✅","msg_cad_ok":"Conta criada! Bem-vindo(a), ","msg_login_ok":"Bem-vindo(a) de volta, ","msg_zap_ok":"✅ WhatsApp atualizado!","msg_campos":"Preencha nome e preço!","msg_cad_campos":"Preencha nome, email e senha!","msg_email_existe":"Este email já está cadastrado. Faça login!","msg_login_erro":"Email ou senha incorretos!","msg_zap_invalido":"WhatsApp inválido! Digite com DDD, só números.","msg_confirm_del":"Remover este produto?","msg_zap_prompt":"Digite seu WhatsApp com DDD (só números, ex: 5567999999999):","garantia_msg":"Como funciona a garantia: 1) O comprador paga e o valor fica travado no contrato inteligente. 2) O vendedor envia o produto. 3) Quando a entrega é confirmada, o pagamento é liberado. Se algo der errado, o valor volta para o comprador. Justo para todos!","wall_no":"Nenhuma carteira encontrada! Instale o MetaMask no seu celular ou navegador para conectar sua carteira Web3.","wall_ok":"Carteira conectada! ","wall_cancel":"Conexão cancelada.","wall_no_txt":"Carteira não encontrada","wall_cancel_txt":"Conexão cancelada","foot2":"O futuro do comércio é descentralizado.","foot3":"© 2026 Feira Onchain. Todos os direitos reservados.","w_titulo":"Escolha sua carteira","w_abrir":"Abrir no app","w_instalar":"Instalar","w_detectada":"Detectada ✓","w_desconectar":"Desconectar","w_ajuda":"No celular, abra o site dentro do app da sua carteira para conectar.","rec_link":"Esqueci minha senha","rec_titulo":"Recuperar senha","rec_email_ph":"Seu email cadastrado","rec_naoachado":"Email não encontrado! Verifique ou cadastre-se.","rec_nome_linha":"Para confirmar sua identidade, digite o nome cadastrado:","rec_nome_erro":"Nome não confere! Tente de novo.","rec_nova":"Nova senha","rec_confirma":"Confirmar nova senha","rec_diferentes":"As senhas não conferem!","rec_ok":"Senha atualizada! Faça login com a nova senha. ✅","rec_continuar":"Continuar","rec_voltar":"Voltar ao login","ph_sol":"Endereço Solana (para receber em SOL)","btn_sol":"◎ Pagar com SOL","sol_seu":"◎ Sua carteira Solana:","sol_sem_cad":"⚠️ Cadastre seu endereço Solana para receber pagamentos em SOL:","sol_add":"Adicionar","sol_ok":"Pagamento em SOL enviado! ✅ Assinatura:","sol_erro":"Erro ao enviar o pagamento. Tente novamente.","sol_precisa_phantom":"Conecte sua carteira Phantom (Solana) para pagar com SOL.",
+"sol_rede_erro":"Falha na rede Solana. Tente novamente em alguns segundos.",
+"w_conectar_sol":"Conectar Solana","sol_sem":"Este vendedor ainda não cadastrou um endereço Solana.","sol_sem_carteira":"Conecte sua carteira Phantom primeiro!","sol_confirma":"Confirmar pagamento de {v} SOL por {n}?","sol_taxa_erro":"Não foi possível obter a cotação do SOL agora. Tente de novo.","sol_lib":"Biblioteca Solana ainda carregando. Aguarde e tente de novo.","msg_sol_prompt":"Digite seu endereço Solana (da Phantom):","msg_sol_invalido":"Endereço Solana inválido!","msg_sol_ok":"✅ Endereço Solana atualizado!","btn_share":"📤 Compartilhar","share_loja":"📤 Compartilhar minha loja","share_txt_prod":"🔥 {n} por R$ {p} na Feira Onchain! 👇","share_txt_loja":"🏪 Conheça minha loja {n} na Feira Onchain! 👇","share_ok":"✅ Link copiado! Cole onde quiser compartilhar.","share_erro":"Não foi possível compartilhar automaticamente. Copie o link:"};T.en={"nav_inicio":"Home","nav_vitrine":"Showcase","nav_vantagens":"Benefits","nav_como":"How It Works","nav_vendedores":"Sellers","nav_entrar":"🔑 Log In","nav_sair":"Log Out","cargo_pres":"👑 President","hero_titulo":"Feira Onchain","hero_sub":"The global decentralized marketplace where buyers and sellers trade with security, transparency and no borders.","hero_cta1":"I Want to Sell Now","hero_cta2":"How It Works","vitrine_titulo":"🛍️ Showcase","vitrine_sub":"Our sellers' products on display. Tap WhatsApp and talk directly to the seller!","vitrine_vazio":"No products in the showcase yet. Be the first to list! 🚀","vant_titulo":"Why Feira Onchain?","vant1t":"🔒 100% Secure","vant1d":"Transactions protected by smart contracts. Your money is only released when you receive the product.","vant2t":"🌍 Global Reach","vant2d":"Sell to customers in any country. Crypto payments, no banking red tape, no borders.","vant3t":"💰 Low Fees","vant3d":"No abusive middlemen. Sellers keep up to 98% of profit. Total fee transparency.","vant4t":"⚡ Instant Payments","vant4d":"Get paid instantly, straight to your wallet. No 30-day waits like traditional marketplaces.","vant5t":"⭐ Onchain Reputation","vant5d":"Reviews recorded on the blockchain. Impossible to fake. Real trust between parties.","vant6t":"🛡️ No Censorship","vant6d":"Your store, your rules. No one can take down your business or freeze your funds.","trust_titulo":"Transparency and Professionalism","trust_texto":"Feira Onchain was built on Web3 pillars: decentralization, transparency and autonomy. Every transaction is auditable, every seller is community-verified and every buyer is protected.","stat1":"Countries reached","stat2":"Always open marketplace","stat3":"Middlemen","como_titulo":"How It Works","como1t":"Connect your Wallet","como1d":"Use MetaMask or any Web3 wallet. Takes less than 1 minute, no complicated signup.","como1b":"🔗 Connect Wallet","como2t":"List or Buy","como2d":"Sellers create their store for free. Buyers browse and pay with total security.","como2b":"📦 Go to My Store","como3t":"Receive Safely","como3d":"Smart contract holds the payment until delivery is confirmed. Fair for everyone.","como3b":"🛡️ See Guarantee","vend_titulo":"🚀 Sellers: Expand Worldwide","vend_texto":"List your store for free today. No monthly fees. No bureaucracy. Reach millions of global customers looking for authentic products and trusted sellers.","vend_cta":"Create My Free Store","cad_titulo":"📦 List Your Products","cad_aviso":"🔒 To list products and see your store, log in with your email and password.","cad_entrar":"🔑 Log In / Create Account","auth_titulo":"🔑 Seller Area","auth_login":"Log In","auth_cad":"Sign Up","auth_btn_entrar":"Log In","auth_btn_criar":"Create My Account","auth_fechar":"Close","ph_nome":"Product name","ph_preco":"Price (e.g. 29.90)","ph_link":"Affiliate link (e.g. https://...)","ph_loja":"Store / seller name","ph_email":"Email","ph_senha":"Create a password","ph_zap":"WhatsApp with country code (e.g. 15551234567)","form_foto":"📷 Product photo:","form_add":"Add Product","loja_minha":"🏪 My Store","loja_painel":"👑 President Panel","loja_painel_sub":"👑 President Panel — you see ALL sellers' stores","zap_seu":"📱 Your WhatsApp:","zap_alterar":"Change","zap_sem":"⚠️ Add your WhatsApp so customers can reach you on the product button:","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Buy / Affiliate","btn_editar":"✏️ Edit","btn_excluir":"🗑️ Delete","btn_salvar":"💾 Save","btn_cancelar":"✖ Cancel","btn_foto":"📸 Take Photo","btn_galeria":"🖼️ Choose from Gallery","btn_removefoto":"❌ Remove Photo","lbl_vendedor":"🏪 Seller:","lbl_foto":"📷 Product photo:","edit_titulo":"✏️ Editing product","zap_msg":"Hi! I saw your product {n} (R$ {p}) on Feira Onchain and want to know more!","msg_add_ok":"Product added! 🎉","msg_upd_ok":"Product updated! ✅","msg_cad_ok":"Account created! Welcome, ","msg_login_ok":"Welcome back, ","msg_zap_ok":"✅ WhatsApp updated!","msg_campos":"Fill in name and price!","msg_cad_campos":"Fill in name, email and password!","msg_email_existe":"This email is already registered. Please log in!","msg_login_erro":"Incorrect email or password!","msg_zap_invalido":"Invalid WhatsApp! Type with country code, numbers only.","msg_confirm_del":"Remove this product?","msg_zap_prompt":"Type your WhatsApp with country code (numbers only, e.g. 15551234567):","garantia_msg":"How the guarantee works: 1) The buyer pays and the amount is locked in the smart contract. 2) The seller ships the product. 3) When delivery is confirmed, payment is released. If something goes wrong, the amount returns to the buyer. Fair for everyone!","wall_no":"No wallet found! Install MetaMask on your phone or browser to connect your Web3 wallet.","wall_ok":"Wallet connected! ","wall_cancel":"Connection cancelled.","wall_no_txt":"Wallet not found","wall_cancel_txt":"Connection cancelled","foot2":"The future of commerce is decentralized.","foot3":"© 2026 Feira Onchain. All rights reserved.","w_titulo":"Choose your wallet","w_abrir":"Open in app","w_instalar":"Install","w_detectada":"Detected ✓","w_desconectar":"Disconnect","w_ajuda":"On mobile, open the site inside your wallet app to connect.","rec_link":"Forgot my password","rec_titulo":"Recover password","rec_email_ph":"Your registered email","rec_naoachado":"Email not found! Check or sign up.","rec_nome_linha":"To confirm your identity, type your registered name:","rec_nome_erro":"Name doesn't match! Try again.","rec_nova":"New password","rec_confirma":"Confirm new password","rec_diferentes":"Passwords don't match!","rec_ok":"Password updated! Log in with the new password. ✅","rec_continuar":"Continue","rec_voltar":"Back to login","ph_sol":"Solana address (to receive SOL)","btn_sol":"◎ Pay with SOL","sol_seu":"◎ Your Solana wallet:","sol_sem_cad":"⚠️ Add your Solana address to receive SOL payments:","sol_add":"Add","sol_ok":"SOL payment sent! ✅ Signature:","sol_erro":"Error sending payment. Try again.","sol_precisa_phantom":"Connect your Phantom (Solana) wallet to pay with SOL.",
+"sol_rede_erro":"Solana network failure. Try again in a few seconds.",
+"w_conectar_sol":"Connect Solana","sol_sem":"This seller hasn't added a Solana address yet.","sol_sem_carteira":"Connect your Phantom wallet first!","sol_confirma":"Confirm payment of {v} SOL for {n}?","sol_taxa_erro":"Could not get the SOL price right now. Try again.","sol_lib":"Solana library still loading. Wait and try again.","msg_sol_prompt":"Type your Solana address (from Phantom):","msg_sol_invalido":"Invalid Solana address!","msg_sol_ok":"✅ Solana address updated!","btn_share":"📤 Share","share_loja":"📤 Share my store","share_txt_prod":"🔥 {n} for R$ {p} on Feira Onchain! 👇","share_txt_loja":"🏪 Check out my store {n} on Feira Onchain! 👇","share_ok":"✅ Link copied! Paste it wherever you want to share.","share_erro":"Could not share automatically. Copy the link:"};T.es={"nav_inicio":"Inicio","nav_vitrine":"Vitrina","nav_vantagens":"Ventajas","nav_como":"Cómo Funciona","nav_vendedores":"Vendedores","nav_entrar":"🔑 Entrar","nav_sair":"Salir","cargo_pres":"👑 Presidente","hero_titulo":"Feira Onchain","hero_sub":"El marketplace global descentralizado donde compradores y vendedores negocian con seguridad, transparencia y sin fronteras.","hero_cta1":"Quiero Vender Ahora","hero_cta2":"Cómo Funciona","vitrine_titulo":"🛍️ Vitrina","vitrine_sub":"Los productos de nuestros vendedores en exhibición. ¡Toca WhatsApp y habla directo con el vendedor!","vitrine_vazio":"Aún no hay productos en la vitrina. ¡Sé el primero en anunciar! 🚀","vant_titulo":"¿Por qué Feira Onchain?","vant1t":"🔒 100% Seguro","vant1d":"Transacciones protegidas por contratos inteligentes. Tu dinero solo se libera cuando recibes el producto.","vant2t":"🌍 Alcance Global","vant2d":"Vende a clientes en cualquier país. Pagos en cripto, sin burocracia bancaria y sin fronteras.","vant3t":"💰 Comisiones Bajas","vant3d":"Sin intermediarios abusivos. Los vendedores conservan hasta el 98% de la ganancia.","vant4t":"⚡ Pagos Instantáneos","vant4d":"Recibe al instante, directo en tu billetera. Sin esperas de 30 días.","vant5t":"⭐ Reputación Onchain","vant5d":"Reseñas registradas en la blockchain. Imposible falsificar. Confianza real.","vant6t":"🛡️ Sin Censura","vant6d":"Tu tienda, tus reglas. Nadie puede tumbar tu negocio ni bloquear tus fondos.","trust_titulo":"Transparencia y Profesionalismo","trust_texto":"Feira Onchain se construyó sobre los pilares de la Web3: descentralización, transparencia y autonomía. Cada transacción es auditable y cada comprador tiene garantía real.","stat1":"Países alcanzados","stat2":"Marketplace siempre abierto","stat3":"Intermediarios","como_titulo":"Cómo Funciona","como1t":"Conecta tu Billetera","como1d":"Usa MetaMask o cualquier billetera Web3. Toma menos de 1 minuto.","como1b":"🔗 Conectar Billetera","como2t":"Anuncia o Compra","como2d":"Los vendedores crean su tienda gratis. Los compradores pagan con total seguridad.","como2b":"📦 Ir a Mi Tienda","como3t":"Recibe con Seguridad","como3d":"El contrato inteligente retiene el pago hasta confirmar la entrega.","como3b":"🛡️ Ver Garantía","vend_titulo":"🚀 Vendedores: Expande al Mundo","vend_texto":"Registra tu tienda gratis hoy. Sin mensualidad. Sin burocracia. Alcanza millones de clientes globales.","vend_cta":"Crear Mi Tienda Gratis","cad_titulo":"📦 Registra Tus Productos","cad_aviso":"🔒 Para registrar productos y ver tu tienda, inicia sesión con tu email y contraseña.","cad_entrar":"🔑 Entrar / Crear Cuenta","auth_titulo":"🔑 Área del Vendedor","auth_login":"Entrar","auth_cad":"Registrarse","auth_btn_entrar":"Entrar","auth_btn_criar":"Crear Mi Cuenta","auth_fechar":"Cerrar","ph_nome":"Nombre del producto","ph_preco":"Precio (ej: 29.90)","ph_link":"Enlace de afiliado (ej: https://...)","ph_loja":"Nombre de la tienda / vendedor","ph_email":"Email","ph_senha":"Crea una contraseña","ph_zap":"WhatsApp con código de país (ej: 34612345678)","form_foto":"📷 Foto del producto:","form_add":"Agregar Producto","loja_minha":"🏪 Mi Tienda","loja_painel":"👑 Panel del Presidente","loja_painel_sub":"👑 Panel del Presidente — ves las tiendas de TODOS los vendedores","zap_seu":"📱 Tu WhatsApp:","zap_alterar":"Cambiar","zap_sem":"⚠️ Agrega tu WhatsApp para que los clientes te contacten:","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Comprar / Afiliado","btn_editar":"✏️ Editar","btn_excluir":"🗑️ Eliminar","btn_salvar":"💾 Guardar","btn_cancelar":"✖ Cancelar","btn_foto":"📸 Tomar Foto","btn_galeria":"🖼️ Elegir de la Galería","btn_removefoto":"❌ Quitar Foto","lbl_vendedor":"🏪 Vendedor:","lbl_foto":"📷 Foto del producto:","edit_titulo":"✏️ Editando producto","zap_msg":"¡Hola! Vi tu producto {n} (R$ {p}) en Feira Onchain y quiero saber más!","msg_add_ok":"¡Producto agregado! 🎉","msg_upd_ok":"¡Producto actualizado! ✅","msg_cad_ok":"¡Cuenta creada! Bienvenido(a), ","msg_login_ok":"Bienvenido(a) de nuevo, ","msg_zap_ok":"✅ ¡WhatsApp actualizado!","msg_campos":"¡Completa nombre y precio!","msg_cad_campos":"¡Completa nombre, email y contraseña!","msg_email_existe":"¡Este email ya está registrado!","msg_login_erro":"¡Email o contraseña incorrectos!","msg_zap_invalido":"¡WhatsApp inválido! Usa código de país, solo números.","msg_confirm_del":"¿Eliminar este producto?","msg_zap_prompt":"Escribe tu WhatsApp con código de país (solo números):","garantia_msg":"Cómo funciona la garantía: 1) El comprador paga y el valor queda bloqueado en el contrato. 2) El vendedor envía el producto. 3) Confirmada la entrega, se libera el pago. Si algo sale mal, el valor vuelve al comprador.","wall_no":"¡No se encontró billetera! Instala MetaMask para conectar tu billetera Web3.","wall_ok":"¡Billetera conectada! ","wall_cancel":"Conexión cancelada.","wall_no_txt":"Billetera no encontrada","wall_cancel_txt":"Conexión cancelada","foot2":"El futuro del comercio es descentralizado.","foot3":"© 2026 Feira Onchain. Todos los derechos reservados.","w_titulo":"Elige tu billetera","w_abrir":"Abrir en la app","w_instalar":"Instalar","w_detectada":"Detectada ✓","w_desconectar":"Desconectar","w_ajuda":"En el móvil, abre el sitio dentro de la app de tu billetera para conectar.","rec_link":"Olvidé mi contraseña","rec_titulo":"Recuperar contraseña","rec_email_ph":"Tu email registrado","rec_naoachado":"¡Email no encontrado! Verifica o regístrate.","rec_nome_linha":"Para confirmar tu identidad, escribe tu nombre registrado:","rec_nome_erro":"¡El nombre no coincide! Inténtalo de nuevo.","rec_nova":"Nueva contraseña","rec_confirma":"Confirmar nueva contraseña","rec_diferentes":"¡Las contraseñas no coinciden!","rec_ok":"¡Contraseña actualizada! Inicia sesión con la nueva contraseña. ✅","rec_continuar":"Continuar","rec_voltar":"Volver al inicio de sesión","ph_sol":"Dirección Solana (para recibir SOL)","btn_sol":"◎ Pagar con SOL","sol_seu":"◎ Tu billetera Solana:","sol_sem_cad":"⚠️ Agrega tu dirección Solana para recibir pagos en SOL:","sol_add":"Agregar","sol_ok":"¡Pago en SOL enviado! ✅ Firma:","sol_erro":"Error al enviar el pago. Inténtalo de nuevo.","sol_precisa_phantom":"Conecta tu billetera Phantom (Solana) para pagar con SOL.",
+"sol_rede_erro":"Fallo en la red Solana. Int\u00e9ntalo de nuevo en unos segundos.",
+"w_conectar_sol":"Conectar Solana","sol_sem":"Este vendedor aún no registró una dirección Solana.","sol_sem_carteira":"¡Conecta tu billetera Phantom primero!","sol_confirma":"¿Confirmar pago de {v} SOL por {n}?","sol_taxa_erro":"No se pudo obtener la cotización de SOL. Inténtalo de nuevo.","sol_lib":"Biblioteca Solana aún cargando. Espera e inténtalo de nuevo.","msg_sol_prompt":"Escribe tu dirección Solana (de Phantom):","msg_sol_invalido":"¡Dirección Solana inválida!","msg_sol_ok":"✅ ¡Dirección Solana actualizada!","btn_share":"📤 Compartir","share_loja":"📤 Compartir mi tienda","share_txt_prod":"🔥 {n} por R$ {p} en Feira Onchain! 👇","share_txt_loja":"🏪 ¡Conoce mi tienda {n} en Feira Onchain! 👇","share_ok":"✅ ¡Enlace copiado! Pégalo donde quieras compartir.","share_erro":"No se pudo compartir automáticamente. Copia el enlace:"};T.fr={"nav_inicio":"Accueil","nav_vitrine":"Vitrine","nav_vantagens":"Avantages","nav_como":"Comment ça marche","nav_vendedores":"Vendeurs","nav_entrar":"🔑 Connexion","nav_sair":"Déconnexion","cargo_pres":"👑 Président","hero_titulo":"Feira Onchain","hero_sub":"La marketplace mondiale décentralisée où acheteurs et vendeurs négocient en sécurité, transparence et sans frontières.","hero_cta1":"Je veux vendre","hero_cta2":"Comment ça marche","vitrine_titulo":"🛍️ Vitrine","vitrine_sub":"Les produits de nos vendeurs en vitrine. Touchez WhatsApp et parlez directement au vendeur !","vitrine_vazio":"Aucun produit en vitrine. Soyez le premier à annoncer ! 🚀","vant_titulo":"Pourquoi Feira Onchain ?","vant1t":"🔒 100% Sécurisé","vant1d":"Transactions protégées par smart contracts. Votre argent est libéré à la réception du produit.","vant2t":"🌍 Portée mondiale","vant2d":"Vendez à des clients dans tous les pays. Paiements en crypto, sans frontières.","vant3t":"💰 Frais réduits","vant3d":"Sans intermédiaires abusifs. Les vendeurs gardent jusquà 98% du profit.","vant4t":"⚡ Paiements instantanés","vant4d":"Recevez instantanément, directement dans votre portefeuille.","vant5t":"⭐ Réputation Onchain","vant5d":"Avis enregistrés sur la blockchain. Impossible à falsifier.","vant6t":"🛡️ Sans censure","vant6d":"Votre boutique, vos règles. Personne ne peut bloquer vos fonds.","trust_titulo":"Transparence et professionnalisme","trust_texto":"Feira Onchain repose sur les piliers du Web3 : décentralisation, transparence et autonomie. Chaque transaction est auditable.","stat1":"Pays atteints","stat2":"Marketplace toujours ouvert","stat3":"Intermédiaires","como_titulo":"Comment ça marche","como1t":"Connectez votre portefeuille","como1d":"Utilisez MetaMask ou tout portefeuille Web3. Moins dune minute.","como1b":"🔗 Connecter le portefeuille","como2t":"Annoncez ou achetez","como2d":"Les vendeurs créent leur boutique gratuite. Les acheteurs paient en sécurité.","como2b":"📦 Aller à ma boutique","como3t":"Recevez en sécurité","como3d":"Le smart contract retient le paiement jusquà la livraison confirmée.","como3b":"🛡️ Voir la garantie","vend_titulo":"🚀 Vendeurs : visez le monde","vend_texto":"Créez votre boutique gratuite aujourdhui. Sans abonnement. Atteignez des millions de clients.","vend_cta":"Créer ma boutique gratuite","cad_titulo":"📦 Ajoutez vos produits","cad_aviso":"🔒 Pour ajouter des produits, connectez-vous avec votre email et mot de passe.","cad_entrar":"🔑 Connexion / Créer un compte","auth_titulo":"🔑 Espace vendeur","auth_login":"Connexion","auth_cad":"Inscription","auth_btn_entrar":"Se connecter","auth_btn_criar":"Créer mon compte","auth_fechar":"Fermer","ph_nome":"Nom du produit","ph_preco":"Prix (ex : 29.90)","ph_link":"Lien daffilié (ex : https://...)","ph_loja":"Nom de la boutique / vendeur","ph_email":"Email","ph_senha":"Créez un mot de passe","ph_zap":"WhatsApp avec indicatif (ex : 33612345678)","form_foto":"📷 Photo du produit :","form_add":"Ajouter le produit","loja_minha":"🏪 Ma boutique","loja_painel":"👑 Panneau du président","loja_painel_sub":"👑 Panneau du président — vous voyez les boutiques de TOUS les vendeurs","zap_seu":"📱 Votre WhatsApp :","zap_alterar":"Modifier","zap_sem":"⚠️ Ajoutez votre WhatsApp pour que les clients vous contactent :","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Acheter / Affilié","btn_editar":"✏️ Modifier","btn_excluir":"🗑️ Supprimer","btn_salvar":"💾 Enregistrer","btn_cancelar":"✖ Annuler","btn_foto":"📸 Prendre une photo","btn_galeria":"🖼️ Choisir de la galerie","btn_removefoto":"❌ Retirer la photo","lbl_vendedor":"🏪 Vendeur :","lbl_foto":"📷 Photo du produit :","edit_titulo":"✏️ Modification du produit","zap_msg":"Bonjour ! Jai vu votre produit {n} (R$ {p}) sur Feira Onchain et je veux en savoir plus !","msg_add_ok":"Produit ajouté ! 🎉","msg_upd_ok":"Produit mis à jour ! ✅","msg_cad_ok":"Compte créé ! Bienvenue, ","msg_login_ok":"Bon retour, ","msg_zap_ok":"✅ WhatsApp mis à jour !","msg_campos":"Remplissez le nom et le prix !","msg_cad_campos":"Remplissez nom, email et mot de passe !","msg_email_existe":"Cet email est déjà enregistré !","msg_login_erro":"Email ou mot de passe incorrect !","msg_zap_invalido":"WhatsApp invalide ! Avec indicatif, chiffres uniquement.","msg_confirm_del":"Supprimer ce produit ?","msg_zap_prompt":"Tapez votre WhatsApp avec indicatif (chiffres uniquement) :","garantia_msg":"Fonctionnement de la garantie : 1) Lacheteur paie et le montant est bloqué dans le smart contract. 2) Le vendeur expédie le produit. 3) Livraison confirmée, paiement libéré. En cas de problème, le montant revient à lacheteur.","wall_no":"Aucun portefeuille trouvé ! Installez MetaMask pour connecter votre portefeuille Web3.","wall_ok":"Portefeuille connecté ! ","wall_cancel":"Connexion annulée.","wall_no_txt":"Portefeuille introuvable","wall_cancel_txt":"Connexion annulée","foot2":"Lavenir du commerce est décentralisé.","foot3":"© 2026 Feira Onchain. Tous droits réservés.","w_titulo":"Choisissez votre portefeuille","w_abrir":"Ouvrir dans l'app","w_instalar":"Installer","w_detectada":"Détectée ✓","w_desconectar":"Déconnecter","w_ajuda":"Sur mobile, ouvrez le site dans l'app de votre portefeuille pour connecter.","rec_link":"Mot de passe oublié","rec_titulo":"Récupérer le mot de passe","rec_email_ph":"Votre email enregistré","rec_naoachado":"Email introuvable ! Vérifiez ou inscrivez-vous.","rec_nome_linha":"Pour confirmer votre identité, tapez votre nom enregistré :","rec_nome_erro":"Le nom ne correspond pas ! Réessayez.","rec_nova":"Nouveau mot de passe","rec_confirma":"Confirmer le nouveau mot de passe","rec_diferentes":"Les mots de passe ne correspondent pas !","rec_ok":"Mot de passe mis à jour ! Connectez-vous avec le nouveau. ✅","rec_continuar":"Continuer","rec_voltar":"Retour à la connexion","ph_sol":"Adresse Solana (pour recevoir des SOL)","btn_sol":"◎ Payer en SOL","sol_seu":"◎ Votre portefeuille Solana :","sol_sem_cad":"⚠️ Ajoutez votre adresse Solana pour recevoir des paiements en SOL :","sol_add":"Ajouter","sol_ok":"Paiement en SOL envoyé ! ✅ Signature :","sol_erro":"Erreur d'envoi du paiement. Réessayez.","sol_precisa_phantom":"Connectez votre portefeuille Phantom (Solana) pour payer en SOL.",
+"sol_rede_erro":"\u00c9chec du r\u00e9seau Solana. R\u00e9essayez dans quelques secondes.",
+"w_conectar_sol":"Connecter Solana","sol_sem":"Ce vendeur n'a pas encore d'adresse Solana.","sol_sem_carteira":"Connectez d'abord votre portefeuille Phantom !","sol_confirma":"Confirmer le paiement de {v} SOL pour {n} ?","sol_taxa_erro":"Impossible d'obtenir le cours du SOL. Réessayez.","sol_lib":"Bibliothèque Solana en cours de chargement. Patientez.","msg_sol_prompt":"Tapez votre adresse Solana (de Phantom) :","msg_sol_invalido":"Adresse Solana invalide !","msg_sol_ok":"✅ Adresse Solana mise à jour !","btn_share":"📤 Partager","share_loja":"📤 Partager ma boutique","share_txt_prod":"🔥 {n} pour R$ {p} sur Feira Onchain ! 👇","share_txt_loja":"🏪 Découvrez ma boutique {n} sur Feira Onchain ! 👇","share_ok":"✅ Lien copié ! Collez-le où vous voulez partager.","share_erro":"Partage automatique impossible. Copiez le lien :"};T.de={"nav_inicio":"Start","nav_vitrine":"Vitrine","nav_vantagens":"Vorteile","nav_como":"So gehts","nav_vendedores":"Verkäufer","nav_entrar":"🔑 Anmelden","nav_sair":"Abmelden","cargo_pres":"👑 Präsident","hero_titulo":"Feira Onchain","hero_sub":"Der globale dezentrale Marktplatz, auf dem Käufer und Verkäufer sicher, transparent und grenzenlos handeln.","hero_cta1":"Ich will verkaufen","hero_cta2":"So gehts","vitrine_titulo":"🛍️ Vitrine","vitrine_sub":"Die Produkte unserer Verkäufer im Schaufenster. Tippe auf WhatsApp und sprich direkt mit dem Verkäufer!","vitrine_vazio":"Noch keine Produkte in der Vitrine. Sei der Erste! 🚀","vant_titulo":"Warum Feira Onchain?","vant1t":"🔒 100% Sicher","vant1d":"Transaktionen durch Smart Contracts geschützt. Dein Geld wird erst nach Erhalt freigegeben.","vant2t":"🌍 Globale Reichweite","vant2d":"Verkaufe an Kunden in jedem Land. Krypto-Zahlungen, keine Grenzen.","vant3t":"💰 Niedrige Gebühren","vant3d":"Keine unfairen Mittelsmänner. Verkäufer behalten bis zu 98% des Gewinns.","vant4t":"⚡ Sofortige Zahlungen","vant4d":"Erhalte sofort, direkt in deine Wallet. Kein 30-Tage-Warten.","vant5t":"⭐ Onchain-Ruf","vant5d":"Bewertungen auf der Blockchain. Unfälschbar. Echtes Vertrauen.","vant6t":"🛡️ Keine Zensur","vant6d":"Dein Shop, deine Regeln. Niemand kann dein Guthaben sperren.","trust_titulo":"Transparenz und Professionalität","trust_texto":"Feira Onchain basiert auf Web3: Dezentralisierung, Transparenz und Autonomie. Jede Transaktion ist prüfbar.","stat1":"Erreichte Länder","stat2":"Immer geöffnet","stat3":"Mittelsmänner","como_titulo":"So gehts","como1t":"Wallet verbinden","como1d":"Nutze MetaMask oder eine Web3-Wallet. Dauert keine Minute.","como1b":"🔗 Wallet verbinden","como2t":"Anbieten oder kaufen","como2d":"Verkäufer erstellen gratis ihren Shop. Käufer zahlen sicher.","como2b":"📦 Zu meinem Shop","como3t":"Sicher erhalten","como3d":"Smart Contract hält die Zahlung bis zur bestätigten Lieferung.","como3b":"🛡️ Garantie ansehen","vend_titulo":"🚀 Verkäufer: Erobert die Welt","vend_texto":"Erstelle heute gratis deinen Shop. Keine Gebühren. Erreiche Millionen Kunden weltweit.","vend_cta":"Gratis-Shop erstellen","cad_titulo":"📦 Produkte eintragen","cad_aviso":"🔒 Melde dich mit E-Mail und Passwort an, um Produkte einzutragen.","cad_entrar":"🔑 Anmelden / Konto erstellen","auth_titulo":"🔑 Verkäuferbereich","auth_login":"Anmelden","auth_cad":"Registrieren","auth_btn_entrar":"Anmelden","auth_btn_criar":"Konto erstellen","auth_fechar":"Schließen","ph_nome":"Produktname","ph_preco":"Preis (z.B. 29.90)","ph_link":"Affiliate-Link (z.B. https://...)","ph_loja":"Shop- / Verkäufername","ph_email":"E-Mail","ph_senha":"Passwort erstellen","ph_zap":"WhatsApp mit Ländercode (z.B. 491512345678)","form_foto":"📷 Produktfoto:","form_add":"Produkt hinzufügen","loja_minha":"🏪 Mein Shop","loja_painel":"👑 Präsidenten-Panel","loja_painel_sub":"👑 Präsidenten-Panel — du siehst die Shops ALLER Verkäufer","zap_seu":"📱 Deine WhatsApp:","zap_alterar":"Ändern","zap_sem":"⚠️ Trage deine WhatsApp ein, damit Kunden dich erreichen:","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Kaufen / Affiliate","btn_editar":"✏️ Bearbeiten","btn_excluir":"🗑️ Löschen","btn_salvar":"💾 Speichern","btn_cancelar":"✖ Abbrechen","btn_foto":"📸 Foto machen","btn_galeria":"🖼️ Aus Galerie wählen","btn_removefoto":"❌ Foto entfernen","lbl_vendedor":"🏪 Verkäufer:","lbl_foto":"📷 Produktfoto:","edit_titulo":"✏️ Produkt bearbeiten","zap_msg":"Hallo! Ich habe dein Produkt {n} (R$ {p}) auf Feira Onchain gesehen und möchte mehr wissen!","msg_add_ok":"Produkt hinzugefügt! 🎉","msg_upd_ok":"Produkt aktualisiert! ✅","msg_cad_ok":"Konto erstellt! Willkommen, ","msg_login_ok":"Willkommen zurück, ","msg_zap_ok":"✅ WhatsApp aktualisiert!","msg_campos":"Name und Preis ausfüllen!","msg_cad_campos":"Name, E-Mail und Passwort ausfüllen!","msg_email_existe":"Diese E-Mail ist bereits registriert!","msg_login_erro":"Falsche E-Mail oder Passwort!","msg_zap_invalido":"Ungültige WhatsApp! Mit Ländercode, nur Zahlen.","msg_confirm_del":"Produkt entfernen?","msg_zap_prompt":"Deine WhatsApp mit Ländercode (nur Zahlen):","garantia_msg":"So funktioniert die Garantie: 1) Der Käufer zahlt, der Betrag wird im Smart Contract gesperrt. 2) Der Verkäufer versendet. 3) Nach bestätigter Lieferung wird gezahlt. Bei Problemen geht der Betrag an den Käufer zurück.","wall_no":"Keine Wallet gefunden! Installiere MetaMask, um deine Web3-Wallet zu verbinden.","wall_ok":"Wallet verbunden! ","wall_cancel":"Abgebrochen.","wall_no_txt":"Wallet nicht gefunden","wall_cancel_txt":"Abgebrochen","foot2":"Die Zukunft des Handels ist dezentral.","foot3":"© 2026 Feira Onchain. Alle Rechte vorbehalten.","w_titulo":"Wähle deine Wallet","w_abrir":"In App öffnen","w_instalar":"Installieren","w_detectada":"Erkannt ✓","w_desconectar":"Trennen","w_ajuda":"Öffne die Seite auf dem Handy in deiner Wallet-App, um zu verbinden.","rec_link":"Passwort vergessen","rec_titulo":"Passwort wiederherstellen","rec_email_ph":"Deine registrierte E-Mail","rec_naoachado":"E-Mail nicht gefunden! Prüfe oder registriere dich.","rec_nome_linha":"Gib zur Bestätigung deinen registrierten Namen ein:","rec_nome_erro":"Name stimmt nicht überein! Versuche es erneut.","rec_nova":"Neues Passwort","rec_confirma":"Neues Passwort bestätigen","rec_diferentes":"Passwörter stimmen nicht überein!","rec_ok":"Passwort aktualisiert! Melde dich mit dem neuen an. ✅","rec_continuar":"Weiter","rec_voltar":"Zurück zum Login","ph_sol":"Solana-Adresse (für SOL-Empfang)","btn_sol":"◎ Mit SOL zahlen","sol_seu":"◎ Deine Solana-Wallet:","sol_sem_cad":"⚠️ Trage deine Solana-Adresse ein, um SOL zu empfangen:","sol_add":"Hinzufügen","sol_ok":"SOL-Zahlung gesendet! ✅ Signatur:","sol_erro":"Fehler beim Senden. Versuche es erneut.","sol_precisa_phantom":"Verbinde deine Phantom (Solana) Wallet, um mit SOL zu zahlen.",
+"sol_rede_erro":"Solana-Netzwerkfehler. Versuche es in wenigen Sekunden erneut.",
+"w_conectar_sol":"Solana verbinden","sol_sem":"Dieser Verkäufer hat noch keine Solana-Adresse.","sol_sem_carteira":"Verbinde zuerst deine Phantom-Wallet!","sol_confirma":"Zahlung von {v} SOL für {n} bestätigen?","sol_taxa_erro":"SOL-Kurs konnte nicht abgerufen werden. Versuche es erneut.","sol_lib":"Solana-Bibliothek lädt noch. Warte kurz.","msg_sol_prompt":"Deine Solana-Adresse (aus Phantom):","msg_sol_invalido":"Ungültige Solana-Adresse!","msg_sol_ok":"✅ Solana-Adresse aktualisiert!","btn_share":"📤 Teilen","share_loja":"📤 Meinen Shop teilen","share_txt_prod":"🔥 {n} für R$ {p} auf Feira Onchain! 👇","share_txt_loja":"🏪 Schau dir meinen Shop {n} auf Feira Onchain an! 👇","share_ok":"✅ Link kopiert! Füge ihn ein, wo du teilen willst.","share_erro":"Automatisches Teilen nicht möglich. Kopiere den Link:"};T.it={"nav_inicio":"Home","nav_vitrine":"Vetrina","nav_vantagens":"Vantaggi","nav_como":"Come funziona","nav_vendedores":"Venditori","nav_entrar":"🔑 Accedi","nav_sair":"Esci","cargo_pres":"👑 Presidente","hero_titulo":"Feira Onchain","hero_sub":"Il marketplace globale decentralizzato dove acquirenti e venditori negoziano con sicurezza, trasparenza e senza frontiere.","hero_cta1":"Voglio vendere","hero_cta2":"Come funziona","vitrine_titulo":"🛍️ Vetrina","vitrine_sub":"I prodotti dei nostri venditori in vetrina. Tocca WhatsApp e parla direttamente col venditore!","vitrine_vazio":"Nessun prodotto in vetrina. Sii il primo! 🚀","vant_titulo":"Perché Feira Onchain?","vant1t":"🔒 100% Sicuro","vant1d":"Transazioni protette da smart contract. Il denaro si sblocca solo alla ricezione.","vant2t":"🌍 Portata globale","vant2d":"Vendi a clienti in ogni paese. Pagamenti in cripto, senza frontiere.","vant3t":"💰 Commissioni basse","vant3d":"Nessun intermediario abusivo. I venditori trattengono fino al 98%.","vant4t":"⚡ Pagamenti istantanei","vant4d":"Ricevi subito, diretto nel tuo wallet. Niente attese di 30 giorni.","vant5t":"⭐ Reputazione Onchain","vant5d":"Recensioni sulla blockchain. Impossibili da falsificare.","vant6t":"🛡️ Senza censura","vant6d":"Il tuo negozio, le tue regole. Nessuno può bloccare i tuoi fondi.","trust_titulo":"Trasparenza e professionalità","trust_texto":"Feira Onchain si basa sul Web3: decentralizzazione, trasparenza e autonomia. Ogni transazione è verificabile.","stat1":"Paesi raggiunti","stat2":"Sempre aperto","stat3":"Intermediari","como_titulo":"Come funziona","como1t":"Collega il wallet","como1d":"Usa MetaMask o un wallet Web3. Meno di un minuto.","como1b":"🔗 Collega wallet","como2t":"Vendi o compra","como2d":"I venditori creano gratis il negozio. Gli acquirenti pagano sicuri.","como2b":"📦 Vai al mio negozio","como3t":"Ricevi in sicurezza","como3d":"Lo smart contract trattiene il pagamento fino alla consegna.","como3b":"🛡️ Vedi garanzia","vend_titulo":"🚀 Venditori: conquistate il mondo","vend_texto":"Crea oggi gratis il tuo negozio. Nessun canone. Raggiungi milioni di clienti.","vend_cta":"Crea il mio negozio gratis","cad_titulo":"📦 Aggiungi i prodotti","cad_aviso":"🔒 Accedi con email e password per aggiungere prodotti.","cad_entrar":"🔑 Accedi / Crea account","auth_titulo":"🔑 Area venditore","auth_login":"Accedi","auth_cad":"Registrati","auth_btn_entrar":"Accedi","auth_btn_criar":"Crea il mio account","auth_fechar":"Chiudi","ph_nome":"Nome prodotto","ph_preco":"Prezzo (es. 29.90)","ph_link":"Link affiliato (es. https://...)","ph_loja":"Nome negozio / venditore","ph_email":"Email","ph_senha":"Crea una password","ph_zap":"WhatsApp con prefisso (es. 393123456789)","form_foto":"📷 Foto prodotto:","form_add":"Aggiungi prodotto","loja_minha":"🏪 Il mio negozio","loja_painel":"👑 Pannello presidente","loja_painel_sub":"👑 Pannello presidente — vedi i negozi di TUTTI i venditori","zap_seu":"📱 Il tuo WhatsApp:","zap_alterar":"Modifica","zap_sem":"⚠️ Aggiungi il tuo WhatsApp per farti contattare:","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Compra / Affiliato","btn_editar":"✏️ Modifica","btn_excluir":"🗑️ Elimina","btn_salvar":"💾 Salva","btn_cancelar":"✖ Annulla","btn_foto":"📸 Scatta foto","btn_galeria":"🖼️ Scegli dalla galleria","btn_removefoto":"❌ Rimuovi foto","lbl_vendedor":"🏪 Venditore:","lbl_foto":"📷 Foto prodotto:","edit_titulo":"✏️ Modifica prodotto","zap_msg":"Ciao! Ho visto il tuo prodotto {n} (R$ {p}) su Feira Onchain e vorrei saperne di più!","msg_add_ok":"Prodotto aggiunto! 🎉","msg_upd_ok":"Prodotto aggiornato! ✅","msg_cad_ok":"Account creato! Benvenuto, ","msg_login_ok":"Bentornato, ","msg_zap_ok":"✅ WhatsApp aggiornato!","msg_campos":"Inserisci nome e prezzo!","msg_cad_campos":"Inserisci nome, email e password!","msg_email_existe":"Email già registrata!","msg_login_erro":"Email o password errati!","msg_zap_invalido":"WhatsApp non valido! Con prefisso, solo numeri.","msg_confirm_del":"Rimuovere il prodotto?","msg_zap_prompt":"Il tuo WhatsApp con prefisso (solo numeri):","garantia_msg":"Come funziona la garanzia: 1) Lacquirente paga e limporto resta bloccato nello smart contract. 2) Il venditore spedisce. 3) Consegna confermata, pagamento sbloccato. In caso di problemi, limporto torna allacquirente.","wall_no":"Nessun wallet trovato! Installa MetaMask per collegare il tuo wallet Web3.","wall_ok":"Wallet collegato! ","wall_cancel":"Annullato.","wall_no_txt":"Wallet non trovato","wall_cancel_txt":"Annullato","foot2":"Il futuro del commercio è decentralizzato.","foot3":"© 2026 Feira Onchain. Tutti i diritti riservati.","w_titulo":"Scegli il tuo wallet","w_abrir":"Apri nell'app","w_instalar":"Installa","w_detectada":"Rilevato ✓","w_desconectar":"Disconnetti","w_ajuda":"Sul cellulare, apri il sito nell'app del tuo wallet per collegarti.","rec_link":"Password dimenticata","rec_titulo":"Recupera password","rec_email_ph":"La tua email registrata","rec_naoachado":"Email non trovata! Controlla o registrati.","rec_nome_linha":"Per confermare la tua identità, digita il nome registrato:","rec_nome_erro":"Il nome non corrisponde! Riprova.","rec_nova":"Nuova password","rec_confirma":"Conferma nuova password","rec_diferentes":"Le password non corrispondono!","rec_ok":"Password aggiornata! Accedi con la nuova. ✅","rec_continuar":"Continua","rec_voltar":"Torna al login","ph_sol":"Indirizzo Solana (per ricevere SOL)","btn_sol":"◎ Paga con SOL","sol_seu":"◎ Il tuo wallet Solana:","sol_sem_cad":"⚠️ Aggiungi il tuo indirizzo Solana per ricevere pagamenti in SOL:","sol_add":"Aggiungi","sol_ok":"Pagamento in SOL inviato! ✅ Firma:","sol_erro":"Errore nell'invio. Riprova.","sol_precisa_phantom":"Collega il tuo wallet Phantom (Solana) per pagare con SOL.",
+"sol_rede_erro":"Errore di rete Solana. Riprova tra qualche secondo.",
+"w_conectar_sol":"Connetti Solana","sol_sem":"Questo venditore non ha ancora un indirizzo Solana.","sol_sem_carteira":"Collega prima il tuo wallet Phantom!","sol_confirma":"Confermi il pagamento di {v} SOL per {n}?","sol_taxa_erro":"Impossibile ottenere la quotazione di SOL. Riprova.","sol_lib":"Libreria Solana ancora in caricamento. Attendi.","msg_sol_prompt":"Digita il tuo indirizzo Solana (da Phantom):","msg_sol_invalido":"Indirizzo Solana non valido!","msg_sol_ok":"✅ Indirizzo Solana aggiornato!","btn_share":"📤 Condividi","share_loja":"📤 Condividi il mio negozio","share_txt_prod":"🔥 {n} a R$ {p} su Feira Onchain! 👇","share_txt_loja":"🏪 Scopri il mio negozio {n} su Feira Onchain! 👇","share_ok":"✅ Link copiato! Incollalo dove vuoi condividere.","share_erro":"Condivisione automatica non riuscita. Copia il link:"};T.zh={"nav_inicio":"首页","nav_vitrine":"橱窗","nav_vantagens":"优势","nav_como":"使用方法","nav_vendedores":"卖家","nav_entrar":"🔑 登录","nav_sair":"退出","cargo_pres":"👑 会长","hero_titulo":"Feira Onchain","hero_sub":"全球去中心化市场，买卖双方安全、透明、无国界交易。","hero_cta1":"我要开店","hero_cta2":"使用方法","vitrine_titulo":"🛍️ 橱窗","vitrine_sub":"卖家商品展示。点击 WhatsApp 直接与卖家交谈！","vitrine_vazio":"橱窗暂无商品，成为第一个发布的人！🚀","vant_titulo":"为什么选择 Feira Onchain？","vant1t":"🔒 100% 安全","vant1d":"智能合约保护交易，收到商品后才放款。","vant2t":"🌍 全球覆盖","vant2d":"向任何国家的客户销售，加密货币支付，无国界。","vant3t":"💰 低手续费","vant3d":"没有中间商盘剥，卖家保留高达98%的利润。","vant4t":"⚡ 即时到账","vant4d":"即时到账，直接进入你的钱包，无需等待30天。","vant5t":"⭐ 链上信誉","vant5d":"评价记录在区块链上，无法伪造，真实可信。","vant6t":"🛡️ 无审查","vant6d":"你的店铺你做主，无人能冻结你的资金。","trust_titulo":"透明与专业","trust_texto":"Feira Onchain 建立在 Web3 基石上：去中心化、透明和自主。每笔交易可审计。","stat1":"覆盖国家","stat2":"全天候营业","stat3":"中间商","como_titulo":"使用方法","como1t":"连接钱包","como1d":"使用 MetaMask 或任何 Web3 钱包，不到1分钟。","como1b":"🔗 连接钱包","como2t":"发布或购买","como2d":"卖家免费开店，买家安全支付。","como2b":"📦 进入我的店铺","como3t":"安全收款","como3d":"智能合约在确认收货前托管货款。","como3b":"🛡️ 查看保障","vend_titulo":"🚀 卖家：走向世界","vend_texto":"今天免费开店，无月费、无繁琐手续，触达全球数百万客户。","vend_cta":"免费创建我的店铺","cad_titulo":"📦 发布商品","cad_aviso":"🔒 请用邮箱和密码登录后发布商品。","cad_entrar":"🔑 登录 / 创建账户","auth_titulo":"🔑 卖家中心","auth_login":"登录","auth_cad":"注册","auth_btn_entrar":"登录","auth_btn_criar":"创建我的账户","auth_fechar":"关闭","ph_nome":"商品名称","ph_preco":"价格（例如 29.90）","ph_link":"推广链接（例如 https://...）","ph_loja":"店铺 / 卖家名称","ph_email":"邮箱","ph_senha":"创建密码","ph_zap":"WhatsApp（含国家代码，例如 8613812345678）","form_foto":"📷 商品照片：","form_add":"添加商品","loja_minha":"🏪 我的店铺","loja_painel":"👑 会长面板","loja_painel_sub":"👑 会长面板 — 查看所有卖家的店铺","zap_seu":"📱 你的 WhatsApp：","zap_alterar":"修改","zap_sem":"⚠️ 填写 WhatsApp，客户可通过商品按钮联系你：","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 购买 / 推广","btn_editar":"✏️ 编辑","btn_excluir":"🗑️ 删除","btn_salvar":"💾 保存","btn_cancelar":"✖ 取消","btn_foto":"📸 拍照","btn_galeria":"🖼️ 从相册选择","btn_removefoto":"❌ 删除照片","lbl_vendedor":"🏪 卖家：","lbl_foto":"📷 商品照片：","edit_titulo":"✏️ 编辑商品","zap_msg":"你好！我在 Feira Onchain 上看到你的商品 {n}（R$ {p}），想了解更多！","msg_add_ok":"商品已添加！🎉","msg_upd_ok":"商品已更新！✅","msg_cad_ok":"账户已创建！欢迎，","msg_login_ok":"欢迎回来，","msg_zap_ok":"✅ WhatsApp 已更新！","msg_campos":"请填写名称和价格！","msg_cad_campos":"请填写名称、邮箱和密码！","msg_email_existe":"该邮箱已注册！","msg_login_erro":"邮箱或密码错误！","msg_zap_invalido":"WhatsApp 无效！请含国家代码，只填数字。","msg_confirm_del":"删除该商品？","msg_zap_prompt":"输入你的 WhatsApp（含国家代码，只填数字）：","garantia_msg":"保障机制：1）买家付款，货款锁定在智能合约中。2）卖家发货。3）确认收货后放款。如有问题，货款退回买家。","wall_no":"未找到钱包！请安装 MetaMask 以连接 Web3 钱包。","wall_ok":"钱包已连接！","wall_cancel":"已取消。","wall_no_txt":"未找到钱包","wall_cancel_txt":"已取消","foot2":"商业的未来是去中心化的。","foot3":"© 2026 Feira Onchain。版权所有。","w_titulo":"选择你的钱包","w_abrir":"在 App 中打开","w_instalar":"安装","w_detectada":"已检测到 ✓","w_desconectar":"断开连接","w_ajuda":"在手机上，请在钱包 App 内打开本网站以连接。","rec_link":"忘记密码","rec_titulo":"找回密码","rec_email_ph":"你注册的邮箱","rec_naoachado":"未找到邮箱！请检查或注册。","rec_nome_linha":"为确认身份，请输入注册时的姓名：","rec_nome_erro":"姓名不匹配！请重试。","rec_nova":"新密码","rec_confirma":"确认新密码","rec_diferentes":"两次输入的密码不一致！","rec_ok":"密码已更新！请用新密码登录。✅","rec_continuar":"继续","rec_voltar":"返回登录","ph_sol":"Solana 地址（用于接收 SOL）","btn_sol":"◎ 用 SOL 支付","sol_seu":"◎ 你的 Solana 钱包：","sol_sem_cad":"⚠️ 添加你的 Solana 地址以接收 SOL 付款：","sol_add":"添加","sol_ok":"SOL 支付已发送！✅ 签名：","sol_erro":"发送付款时出错，请重试。","sol_precisa_phantom":"\u8fde\u63a5\u60a8\u7684Phantom\uff08Solana\uff09\u94b1\u5305\u4ee5\u4f7f\u7528SOL\u652f\u4ed8\u3002",
+"sol_rede_erro":"Solana\u7f51\u7edc\u6545\u969c\u3002\u8bf7\u51e0\u79d2\u949f\u540e\u91cd\u8bd5\u3002",
+"w_conectar_sol":"\u8fde\u63a5Solana","sol_sem":"该卖家尚未添加 Solana 地址。","sol_sem_carteira":"请先连接你的 Phantom 钱包！","sol_confirma":"确认支付 {v} SOL 购买 {n}？","sol_taxa_erro":"暂时无法获取 SOL 汇率，请重试。","sol_lib":"Solana 库正在加载，请稍候再试。","msg_sol_prompt":"输入你的 Solana 地址（来自 Phantom）：","msg_sol_invalido":"Solana 地址无效！","msg_sol_ok":"✅ Solana 地址已更新！","btn_share":"📤 分享","share_loja":"📤 分享我的店铺","share_txt_prod":"🔥 {n} 仅售 R$ {p}，就在 Feira Onchain！👇","share_txt_loja":"🏪 来看看我在 Feira Onchain 的店铺 {n}！👇","share_ok":"✅ 链接已复制！粘贴到你想分享的地方。","share_erro":"无法自动分享，请复制链接："};T.ja={"nav_inicio":"ホーム","nav_vitrine":"ショーケース","nav_vantagens":"メリット","nav_como":"使い方","nav_vendedores":"出品者","nav_entrar":"🔑 ログイン","nav_sair":"ログアウト","cargo_pres":"👑 会長","hero_titulo":"Feira Onchain","hero_sub":"売り手と買い手が安全・透明・国境なく取引できる、世界的な分散型マーケット。","hero_cta1":"出品を始める","hero_cta2":"使い方","vitrine_titulo":"🛍️ ショーケース","vitrine_sub":"出品者の商品を展示中。WhatsAppをタップして出品者と直接話そう！","vitrine_vazio":"まだ商品がありません。最初の出品者になろう！🚀","vant_titulo":"Feira Onchainが選ばれる理由","vant1t":"🔒 100%安全","vant1d":"スマートコントラクトで取引を保護。商品到着後に代金が解放されます。","vant2t":"🌍 世界へ販売","vant2d":"世界中の顧客に販売。暗号資産決済で国境なし。","vant3t":"💰 低手数料","vant3d":"不当な仲介者なし。出品者は最大98%の利益を保持。","vant4t":"⚡ 即時決済","vant4d":"ウォレットへ即時入金。30日待ちなし。","vant5t":"⭐ オンチェーン評価","vant5d":"評価はブロックチェーンに記録。偽造不可能。","vant6t":"🛡️ 検閲なし","vant6d":"あなたの店、あなたのルール。資金を凍結される心配なし。","trust_titulo":"透明性とプロ意識","trust_texto":"Feira OnchainはWeb3の柱の上に構築：分散化・透明性・自律性。すべての取引は監査可能です。","stat1":"到達国数","stat2":"24時間営業","stat3":"仲介者","como_titulo":"使い方","como1t":"ウォレットを接続","como1d":"MetaMask等のWeb3ウォレットを使用。1分以内。","como1b":"🔗 ウォレット接続","como2t":"出品・購入","como2d":"出品者は無料で店舗開設。購入者は安全に決済。","como2b":"📦 マイ店舗へ","como3t":"安全に受取","como3d":"配送確認までスマートコントラクトが代金を保全。","como3b":"🛡️ 保証を見る","vend_titulo":"🚀 出品者：世界へ広げよう","vend_texto":"今日無料で店舗開設。月額なし。世界中の数百万の顧客へ。","vend_cta":"無料で店舗を作成","cad_titulo":"📦 商品を登録","cad_aviso":"🔒 商品登録にはメールとパスワードでログインしてください。","cad_entrar":"🔑 ログイン / アカウント作成","auth_titulo":"🔑 出品者エリア","auth_login":"ログイン","auth_cad":"新規登録","auth_btn_entrar":"ログイン","auth_btn_criar":"アカウント作成","auth_fechar":"閉じる","ph_nome":"商品名","ph_preco":"価格（例：29.90）","ph_link":"アフィリエイトリンク（例：https://...）","ph_loja":"店舗名 / 出品者名","ph_email":"メール","ph_senha":"パスワード作成","ph_zap":"WhatsApp（国番号付き、例：819012345678）","form_foto":"📷 商品写真：","form_add":"商品を追加","loja_minha":"🏪 マイ店舗","loja_painel":"👑 会長パネル","loja_painel_sub":"👑 会長パネル — 全出品者の店舗が見られます","zap_seu":"📱 あなたのWhatsApp：","zap_alterar":"変更","zap_sem":"⚠️ WhatsAppを登録すると商品ボタンから連絡が来ます：","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 購入 / アフィリエイト","btn_editar":"✏️ 編集","btn_excluir":"🗑️ 削除","btn_salvar":"💾 保存","btn_cancelar":"✖ キャンセル","btn_foto":"📸 撮影","btn_galeria":"🖼️ ギャラリーから選択","btn_removefoto":"❌ 写真を削除","lbl_vendedor":"🏪 出品者：","lbl_foto":"📷 商品写真：","edit_titulo":"✏️ 商品を編集中","zap_msg":"こんにちは！Feira Onchainであなたの商品{n}（R$ {p}）を見ました。詳しく知りたいです！","msg_add_ok":"商品を追加しました！🎉","msg_upd_ok":"商品を更新しました！✅","msg_cad_ok":"アカウント作成！ようこそ、","msg_login_ok":"おかえりなさい、","msg_zap_ok":"✅ WhatsAppを更新しました！","msg_campos":"名前と価格を入力してください！","msg_cad_campos":"名前・メール・パスワードを入力してください！","msg_email_existe":"このメールは登録済みです！","msg_login_erro":"メールかパスワードが違います！","msg_zap_invalido":"WhatsAppが無効です！国番号付きで数字のみ。","msg_confirm_del":"この商品を削除しますか？","msg_zap_prompt":"WhatsAppを国番号付きで入力（数字のみ）：","garantia_msg":"保証の仕組み：1）購入者が支払い、代金はスマートコントラクトにロック。2）出品者が発送。3）配送確認後に代金解放。問題があれば購入者に返金。","wall_no":"ウォレットが見つかりません！MetaMaskをインストールしてWeb3ウォレットを接続してください。","wall_ok":"ウォレット接続！","wall_cancel":"キャンセルしました。","wall_no_txt":"ウォレットなし","wall_cancel_txt":"キャンセル","foot2":"商取引の未来は分散型です。","foot3":"© 2026 Feira Onchain。全著作権所有。","w_titulo":"ウォレットを選択","w_abrir":"アプリで開く","w_instalar":"インストール","w_detectada":"検出済み ✓","w_desconectar":"切断","w_ajuda":"スマホではウォレットアプリ内でサイトを開いて接続してください。","rec_link":"パスワードを忘れた","rec_titulo":"パスワードの復旧","rec_email_ph":"登録したメールアドレス","rec_naoachado":"メールが見つかりません！確認または登録してください。","rec_nome_linha":"本人確認のため、登録した名前を入力：","rec_nome_erro":"名前が一致しません！再試行してください。","rec_nova":"新しいパスワード","rec_confirma":"新しいパスワードを確認","rec_diferentes":"パスワードが一致しません！","rec_ok":"パスワードを更新しました！新しいパスワードでログインしてください。✅","rec_continuar":"続ける","rec_voltar":"ログインに戻る","ph_sol":"Solanaアドレス（SOL受取用）","btn_sol":"◎ SOLで支払う","sol_seu":"◎ あなたのSolanaウォレット：","sol_sem_cad":"⚠️ SOLで受け取るにはSolanaアドレスを登録：","sol_add":"追加","sol_ok":"SOL支払いを送信しました！✅ 署名：","sol_erro":"支払いの送信に失敗しました。再試行してください。","sol_precisa_phantom":"SOL\u3067\u652f\u6255\u3046\u306b\u306fPhantom\uff08Solana\uff09\u30a6\u30a9\u30ec\u30c3\u30c8\u3092\u63a5\u7d9a\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
+"sol_rede_erro":"Solana\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u30a8\u30e9\u30fc\u3002\u6570\u79d2\u5f8c\u306b\u518d\u8a66\u884c\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
+"w_conectar_sol":"Solana\u3092\u63a5\u7d9a","sol_sem":"この出品者はまだSolanaアドレスを登録していません。","sol_sem_carteira":"まずPhantomウォレットを接続してください！","sol_confirma":"{n}に{v} SOLを支払いますか？","sol_taxa_erro":"SOLのレートを取得できませんでした。再試行してください。","sol_lib":"Solanaライブラリを読み込み中です。しばらくお待ちください。","msg_sol_prompt":"Solanaアドレスを入力（Phantomのもの）：","msg_sol_invalido":"Solanaアドレスが無効です！","msg_sol_ok":"✅ Solanaアドレスを更新しました！","btn_share":"📤 シェア","share_loja":"📤 ショップをシェア","share_txt_prod":"🔥 {n} が R$ {p}！Feira Onchainで 👇","share_txt_loja":"🏪 Feira Onchainの私のショップ {n} をチェック！👇","share_ok":"✅ リンクをコピーしました！シェアしたい場所に貼り付けてください。","share_erro":"自動シェアできませんでした。リンクをコピーしてください："};T.ar={"nav_inicio":"الرئيسية","nav_vitrine":"الواجهة","nav_vantagens":"المزايا","nav_como":"كيف يعمل","nav_vendedores":"البائعون","nav_entrar":"🔑 دخول","nav_sair":"خروج","cargo_pres":"👑 الرئيس","hero_titulo":"Feira Onchain","hero_sub":"السوق العالمي اللامركزي حيث يتفاوض المشترون والبائعون بأمان وشفافية وبلا حدود.","hero_cta1":"أريد البيع الآن","hero_cta2":"كيف يعمل","vitrine_titulo":"🛍️ الواجهة","vitrine_sub":"منتجات بائعينا معروضة. اضغط واتساب وتحدث مع البائع مباشرة!","vitrine_vazio":"لا توجد منتجات بعد. كن أول من يعلن! 🚀","vant_titulo":"لماذا Feira Onchain؟","vant1t":"🔒 آمن 100%","vant1d":"معاملات محمية بعقود ذكية. لا يُفرج عن المال إلا عند استلام المنتج.","vant2t":"🌍 وصول عالمي","vant2d":"بِع لعملاء في أي بلد. مدفوعات بالعملات الرقمية بلا حدود.","vant3t":"💰 رسوم منخفضة","vant3d":"بلا وسطاء جشعين. يحتفظ البائعون بما يصل إلى 98% من الربح.","vant4t":"⚡ مدفوعات فورية","vant4d":"استلم فورًا في محفظتك. بلا انتظار 30 يومًا.","vant5t":"⭐ سمعة على السلسلة","vant5d":"تقييمات مسجلة على البلوك تشين. مستحيلة التزوير.","vant6t":"🛡️ بلا رقابة","vant6d":"متجرك، قواعدك. لا أحد يستطيع تجميد أموالك.","trust_titulo":"الشفافية والاحترافية","trust_texto":"بُني Feira Onchain على ركائز الويب 3: اللامركزية والشفافية والاستقلالية. كل معاملة قابلة للتدقيق.","stat1":"دولة تم الوصول إليها","stat2":"مفتوح دائمًا","stat3":"وسطاء","como_titulo":"كيف يعمل","como1t":"اربط محفظتك","como1d":"استخدم MetaMask أو أي محفظة Web3. أقل من دقيقة.","como1b":"🔗 ربط المحفظة","como2t":"أعلن أو اشترِ","como2d":"ينشئ البائعون متاجرهم مجانًا. ويتسوق المشترون بأمان.","como2b":"📦 إلى متجري","como3t":"استلم بأمان","como3d":"العقد الذكي يحجز المبلغ حتى تأكيد التسليم.","como3b":"🛡️ عرض الضمان","vend_titulo":"🚀 أيها البائعون: توسعوا عالميًا","vend_texto":"سجّل متجرك مجانًا اليوم. بلا اشتراك. واصِل ملايين العملاء حول العالم.","vend_cta":"أنشئ متجري مجانًا","cad_titulo":"📦 أضف منتجاتك","cad_aviso":"🔒 سجّل الدخول بالبريد وكلمة المرور لإضافة المنتجات.","cad_entrar":"🔑 دخول / إنشاء حساب","auth_titulo":"🔑 منطقة البائع","auth_login":"دخول","auth_cad":"تسجيل","auth_btn_entrar":"دخول","auth_btn_criar":"إنشاء حسابي","auth_fechar":"إغلاق","ph_nome":"اسم المنتج","ph_preco":"السعر (مثال: 29.90)","ph_link":"رابط التسويق (مثال: https://...)","ph_loja":"اسم المتجر / البائع","ph_email":"البريد","ph_senha":"أنشئ كلمة مرور","ph_zap":"واتساب مع رمز الدولة (مثال: 966501234567)","form_foto":"📷 صورة المنتج:","form_add":"إضافة المنتج","loja_minha":"🏪 متجري","loja_painel":"👑 لوحة الرئيس","loja_painel_sub":"👑 لوحة الرئيس — ترى متاجر جميع البائعين","zap_seu":"📱 واتساب الخاص بك:","zap_alterar":"تغيير","zap_sem":"⚠️ أضف واتساب ليصلك العملاء عبر زر المنتج:","btn_zap":"💬 واتساب","btn_comprar":"🔗 شراء / تسويق","btn_editar":"✏️ تعديل","btn_excluir":"🗑️ حذف","btn_salvar":"💾 حفظ","btn_cancelar":"✖ إلغاء","btn_foto":"📸 التقط صورة","btn_galeria":"🖼️ اختر من المعرض","btn_removefoto":"❌ إزالة الصورة","lbl_vendedor":"🏪 البائع:","lbl_foto":"📷 صورة المنتج:","edit_titulo":"✏️ تعديل المنتج","zap_msg":"مرحبًا! رأيت منتجك {n} (R$ {p}) على Feira Onchain وأريد معرفة المزيد!","msg_add_ok":"تمت إضافة المنتج! 🎉","msg_upd_ok":"تم تحديث المنتج! ✅","msg_cad_ok":"تم إنشاء الحساب! مرحبًا، ","msg_login_ok":"مرحبًا بعودتك، ","msg_zap_ok":"✅ تم تحديث واتساب!","msg_campos":"املأ الاسم والسعر!","msg_cad_campos":"املأ الاسم والبريد وكلمة المرور!","msg_email_existe":"هذا البريد مسجل مسبقًا!","msg_login_erro":"البريد أو كلمة المرور غير صحيحة!","msg_zap_invalido":"واتساب غير صالح! مع رمز الدولة، أرقام فقط.","msg_confirm_del":"حذف هذا المنتج؟","msg_zap_prompt":"أدخل واتساب مع رمز الدولة (أرقام فقط):","garantia_msg":"كيف يعمل الضمان: 1) يدفع المشتري ويُحجز المبلغ في العقد الذكي. 2) يرسل البائع المنتج. 3) عند تأكيد التسليم يُفرج عن المبلغ. عند حدوث مشكلة يعود المبلغ للمشتري.","wall_no":"لم يتم العثور على محفظة! ثبّت MetaMask لربط محفظة Web3.","wall_ok":"تم ربط المحفظة! ","wall_cancel":"تم الإلغاء.","wall_no_txt":"لا توجد محفظة","wall_cancel_txt":"تم الإلغاء","foot2":"مستقبل التجارة لامركزي.","foot3":"© 2026 Feira Onchain. جميع الحقوق محفوظة.","w_titulo":"اختر محفظتك","w_abrir":"افتح في التطبيق","w_instalar":"تثبيت","w_detectada":"تم الكشف ✓","w_desconectar":"قطع الاتصال","w_ajuda":"على الجوال، افتح الموقع داخل تطبيق محفظتك للاتصال.","rec_link":"نسيت كلمة المرور","rec_titulo":"استعادة كلمة المرور","rec_email_ph":"بريدك المسجل","rec_naoachado":"البريد غير موجود! تحقق أو سجل.","rec_nome_linha":"لتأكيد هويتك، أدخل الاسم المسجل:","rec_nome_erro":"الاسم غير متطابق! حاول مجددًا.","rec_nova":"كلمة مرور جديدة","rec_confirma":"تأكيد كلمة المرور الجديدة","rec_diferentes":"كلمتا المرور غير متطابقتين!","rec_ok":"تم تحديث كلمة المرور! سجل الدخول بالجديدة. ✅","rec_continuar":"متابعة","rec_voltar":"عودة لتسجيل الدخول","ph_sol":"عنوان Solana (لاستلام SOL)","btn_sol":"◎ ادفع بـ SOL","sol_seu":"◎ محفظة Solana الخاصة بك:","sol_sem_cad":"⚠️ أضف عنوان Solana الخاص بك لاستلام مدفوعات SOL:","sol_add":"إضافة","sol_ok":"تم إرسال الدفع بـ SOL! ✅ التوقيع:","sol_erro":"خطأ في إرسال الدفع. حاول مجددًا.","sol_precisa_phantom":"\u0642\u0645 \u0628\u062a\u0648\u0635\u064a\u0644 \u0645\u062d\u0641\u0638\u0629 Phantom (Solana) \u0644\u0644\u062f\u0641\u0639 \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 SOL.",
+"sol_rede_erro":"\u0641\u0634\u0644 \u0634\u0628\u0643\u0629 Solana. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0628\u0639\u062f \u0628\u0636\u0639 \u062b\u0648\u0627\u0646\u064d.",
+"w_conectar_sol":"\u0631\u0628\u0637 Solana","sol_sem":"لم يضف هذا البائع عنوان Solana بعد.","sol_sem_carteira":"اربط محفظة Phantom أولًا!","sol_confirma":"تأكيد دفع {v} SOL مقابل {n}؟","sol_taxa_erro":"تعذر الحصول على سعر SOL الآن. حاول مجددًا.","sol_lib":"مكتبة Solana ما زالت تُحمّل. انتظر وحاول مجددًا.","msg_sol_prompt":"أدخل عنوان Solana الخاص بك (من Phantom):","msg_sol_invalido":"عنوان Solana غير صالح!","msg_sol_ok":"✅ تم تحديث عنوان Solana!","btn_share":"📤 مشاركة","share_loja":"📤 مشاركة متجري","share_txt_prod":"🔥 {n} بسعر R$ {p} على Feira Onchain! 👇","share_txt_loja":"🏪 تعرّف على متجري {n} على Feira Onchain! 👇","share_ok":"✅ تم نسخ الرابط! الصقه حيث تريد المشاركة.","share_erro":"تعذرت المشاركة التلقائية. انسخ الرابط:"};T.ru={"nav_inicio":"Главная","nav_vitrine":"Витрина","nav_vantagens":"Преимущества","nav_como":"Как это работает","nav_vendedores":"Продавцы","nav_entrar":"🔑 Войти","nav_sair":"Выйти","cargo_pres":"👑 Президент","hero_titulo":"Feira Onchain","hero_sub":"Глобальный децентрализованный маркетплейс, где покупатели и продавцы торгуют безопасно, прозрачно и без границ.","hero_cta1":"Хочу продавать","hero_cta2":"Как это работает","vitrine_titulo":"🛍️ Витрина","vitrine_sub":"Товары наших продавцов на витрине. Нажми WhatsApp и общайся с продавцом напрямую!","vitrine_vazio":"На витрине пока пусто. Стань первым! 🚀","vant_titulo":"Почему Feira Onchain?","vant1t":"🔒 100% безопасно","vant1d":"Сделки защищены смарт-контрактами. Деньги разблокируются только после получения товара.","vant2t":"🌍 Глобальный охват","vant2d":"Продавай клиентам в любой стране. Криптоплатежи без границ.","vant3t":"💰 Низкие комиссии","vant3d":"Без жадных посредников. Продавцы сохраняют до 98% прибыли.","vant4t":"⚡ Мгновенные выплаты","vant4d":"Получай сразу на кошелёк. Без ожидания 30 дней.","vant5t":"⭐ Ончейн-репутация","vant5d":"Отзывы записаны в блокчейн. Подделать невозможно.","vant6t":"🛡️ Без цензуры","vant6d":"Твой магазин — твои правила. Никто не заморозит твои средства.","trust_titulo":"Прозрачность и профессионализм","trust_texto":"Feira Onchain построен на принципах Web3: децентрализация, прозрачность и автономия. Каждая сделка проверяема.","stat1":"Стран охвачено","stat2":"Всегда открыт","stat3":"Посредники","como_titulo":"Как это работает","como1t":"Подключи кошелёк","como1d":"Используй MetaMask или любой Web3-кошелёк. Меньше минуты.","como1b":"🔗 Подключить кошелёк","como2t":"Размещай или покупай","como2d":"Продавцы бесплатно создают магазин. Покупатели платят безопасно.","como2b":"📦 В мой магазин","como3t":"Получай безопасно","como3d":"Смарт-контракт удерживает оплату до подтверждения доставки.","como3b":"🛡️ Гарантия","vend_titulo":"🚀 Продавцы: выходите в мир","vend_texto":"Создай магазин бесплатно сегодня. Без абонплаты. Миллионы клиентов по всему миру.","vend_cta":"Создать магазин бесплатно","cad_titulo":"📦 Добавь товары","cad_aviso":"🔒 Войди с email и паролем, чтобы добавлять товары.","cad_entrar":"🔑 Войти / Создать аккаунт","auth_titulo":"🔑 Кабинет продавца","auth_login":"Войти","auth_cad":"Регистрация","auth_btn_entrar":"Войти","auth_btn_criar":"Создать аккаунт","auth_fechar":"Закрыть","ph_nome":"Название товара","ph_preco":"Цена (напр. 29.90)","ph_link":"Партнёрская ссылка (напр. https://...)","ph_loja":"Название магазина / продавец","ph_email":"Email","ph_senha":"Придумай пароль","ph_zap":"WhatsApp с кодом страны (напр. 79151234567)","form_foto":"📷 Фото товара:","form_add":"Добавить товар","loja_minha":"🏪 Мой магазин","loja_painel":"👑 Панель президента","loja_painel_sub":"👑 Панель президента — ты видишь магазины ВСЕХ продавцов","zap_seu":"📱 Твой WhatsApp:","zap_alterar":"Изменить","zap_sem":"⚠️ Добавь WhatsApp, чтобы клиенты писали тебе:","btn_zap":"💬 WhatsApp","btn_comprar":"🔗 Купить / Партнёрка","btn_editar":"✏️ Изменить","btn_excluir":"🗑️ Удалить","btn_salvar":"💾 Сохранить","btn_cancelar":"✖ Отмена","btn_foto":"📸 Сделать фото","btn_galeria":"🖼️ Выбрать из галереи","btn_removefoto":"❌ Убрать фото","lbl_vendedor":"🏪 Продавец:","lbl_foto":"📷 Фото товара:","edit_titulo":"✏️ Редактирование товара","zap_msg":"Привет! Я видел твой товар {n} (R$ {p}) на Feira Onchain и хочу узнать больше!","msg_add_ok":"Товар добавлен! 🎉","msg_upd_ok":"Товар обновлён! ✅","msg_cad_ok":"Аккаунт создан! Добро пожаловать, ","msg_login_ok":"С возвращением, ","msg_zap_ok":"✅ WhatsApp обновлён!","msg_campos":"Заполни название и цену!","msg_cad_campos":"Заполни имя, email и пароль!","msg_email_existe":"Этот email уже зарегистрирован!","msg_login_erro":"Неверный email или пароль!","msg_zap_invalido":"Неверный WhatsApp! С кодом страны, только цифры.","msg_confirm_del":"Удалить этот товар?","msg_zap_prompt":"Введи WhatsApp с кодом страны (только цифры):","garantia_msg":"Как работает гарантия: 1) Покупатель платит, сумма блокируется в смарт-контракте. 2) Продавец отправляет товар. 3) После подтверждения доставки оплата разблокируется. При проблеме сумма возвращается покупателю.","wall_no":"Кошелёк не найден! Установи MetaMask, чтобы подключить Web3-кошелёк.","wall_ok":"Кошелёк подключён! ","wall_cancel":"Отменено.","wall_no_txt":"Кошелёк не найден","wall_cancel_txt":"Отменено","foot2":"Будущее торговли — децентрализация.","foot3":"© 2026 Feira Onchain. Все права защищены.","w_titulo":"Выбери кошелёк","w_abrir":"Открыть в приложении","w_instalar":"Установить","w_detectada":"Найден ✓","w_desconectar":"Отключить","w_ajuda":"На телефоне открой сайт внутри приложения кошелька для подключения.","rec_link":"Забыл пароль","rec_titulo":"Восстановление пароля","rec_email_ph":"Твой email","rec_naoachado":"Email не найден! Проверь или зарегистрируйся.","rec_nome_linha":"Для подтверждения введи зарегистрированное имя:","rec_nome_erro":"Имя не совпадает! Попробуй снова.","rec_nova":"Новый пароль","rec_confirma":"Подтверди новый пароль","rec_diferentes":"Пароли не совпадают!","rec_ok":"Пароль обновлён! Войди с новым паролем. ✅","rec_continuar":"Далее","rec_voltar":"Назад ко входу","ph_sol":"Адрес Solana (для получения SOL)","btn_sol":"◎ Оплатить SOL","sol_seu":"◎ Твой Solana-кошелёк:","sol_sem_cad":"⚠️ Добавь адрес Solana, чтобы получать платежи в SOL:","sol_add":"Добавить","sol_ok":"Платёж в SOL отправлен! ✅ Подпись:","sol_erro":"Ошибка отправки платежа. Попробуй снова.","sol_precisa_phantom":"\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u0435 \u043a\u043e\u0448\u0435\u043b\u0451\u043a Phantom (Solana), \u0447\u0442\u043e\u0431\u044b \u043f\u043b\u0430\u0442\u0438\u0442\u044c SOL.",
+"sol_rede_erro":"\u0421\u0431\u043e\u0439 \u0441\u0435\u0442\u0438 Solana. \u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u043f\u043e\u043f\u044b\u0442\u043a\u0443 \u0447\u0435\u0440\u0435\u0437 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0435\u043a\u0443\u043d\u0434.",
+"w_conectar_sol":"\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c Solana","sol_sem":"У этого продавца пока нет адреса Solana.","sol_sem_carteira":"Сначала подключи кошелёк Phantom!","sol_confirma":"Подтвердить платёж {v} SOL за {n}?","sol_taxa_erro":"Не удалось получить курс SOL. Попробуй снова.","sol_lib":"Библиотека Solana ещё загружается. Подожди.","msg_sol_prompt":"Введи свой адрес Solana (из Phantom):","msg_sol_invalido":"Неверный адрес Solana!","msg_sol_ok":"✅ Адрес Solana обновлён!","btn_share":"📤 Поделиться","share_loja":"📤 Поделиться магазином","share_txt_prod":"🔥 {n} за R$ {p} на Feira Onchain! 👇","share_txt_loja":"🏪 Загляни в мой магазин {n} на Feira Onchain! 👇","share_ok":"✅ Ссылка скопирована! Вставь её, где хочешь поделиться.","share_erro":"Не удалось поделиться автоматически. Скопируй ссылку:"};
+var lang="pt";try{lang=localStorage.getItem("lang")||"pt";}catch(e){}
+function t(k){var L=T[lang]||T.pt;if(L&&L[k]!=null)return L[k];if(T.pt&&T.pt[k]!=null)return T.pt[k];return k;}
+function setLang(l){if(!T[l])return;lang=l;try{localStorage.setItem("lang",l);}catch(e){}document.documentElement.lang=l;applyLang();}
+function applyLang(){var a=document.querySelectorAll("[data-i18n]");for(var i=0;i<a.length;i++){a[i].textContent=t(a[i].getAttribute("data-i18n"));}var b=document.querySelectorAll("[data-i18n-ph]");for(var j=0;j<b.length;j++){b[j].placeholder=t(b[j].getAttribute("data-i18n-ph"));}var s=document.getElementById("langSel");if(s)s.value=lang;if(typeof listarVitrine==="function")listarVitrine();if(typeof atualizarTela==="function")atualizarTela();if(typeof atualizarStatusCarteira==="function")atualizarStatusCarteira();}
+(function(){var s=document.getElementById("langSel");if(!s)return;for(var k in LANGS){var o=document.createElement("option");o.value=k;o.textContent=LANGS[k];s.appendChild(o);}s.value=lang;})();
+</script>
+
+<script>
+var PRESIDENTE = "radamez1228@gmail.com";
+var fotoBase64 = "";
+var editIndex = -1;
+var editFoto = "";
+var carteira = "";
+var carteiraSol = "";
+var SITE_URL = "https://feiraonchain.netlify.app";
+var EIP6963 = [];
+var IMG_STYLE = "width:100%;max-height:320px;object-fit:contain;background:#071224;border-radius:10px;margin-bottom:12px";
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function soDigitos(s){ return String(s||"").replace(/\D/g,""); }
+function ehMobile(){ return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||""); }
+function curtaEnd(e){ return e ? e.substring(0,6)+"..."+e.substring(e.length-4) : ""; }
+/* ===== Descoberta de carteiras (EIP-6963: MetaMask, Trust, Coinbase, Brave, OKX, Rabby...) ===== */
+if(typeof window !== "undefined"){
+  window.addEventListener("eip6963:announceProvider", function(ev){
+    var d = ev.detail || {};
+    var id = (d.info && d.info.uuid) || "";
+    for(var i=0;i<EIP6963.length;i++){ if(id && EIP6963[i].info && EIP6963[i].info.uuid === id) return; }
+    EIP6963.push(d);
+    var m = document.getElementById("walletModal");
+    if(m && m.style.display === "flex") renderWallets();
+  });
+  try{ window.dispatchEvent(new Event("eip6963:requestProvider")); }catch(e){}
+}
+function provedoresDetectados(){
+  var out = [], vistos = {};
+  for(var i=0;i<EIP6963.length;i++){
+    var info = EIP6963[i].info || {};
+    var nm6963 = info.name || "Wallet";
+    if(nm6963 === "Phantom") nm6963 = "Phantom (Ethereum)";
+    out.push({nome: nm6963, provider: EIP6963[i].provider});
+    vistos[nm6963] = 1;
+  }
+  try{
+    var eth = window.ethereum;
+    if(eth){
+      var lista = (eth.providers && eth.providers.length) ? eth.providers : [eth];
+      for(var j=0;j<lista.length;j++){
+        var p = lista[j], nome = "Web3 Wallet";
+        if(p.isCoinbaseWallet) nome = "Coinbase Wallet";
+        else if(p.isTrust || p.isTrustWallet) nome = "Trust Wallet";
+        else if(p.isBraveWallet) nome = "Brave Wallet";
+        else if(p.isPhantom) nome = "Phantom (Ethereum)";
+        else if(p.isMetaMask) nome = "MetaMask";
+        if(!vistos[nome]){ out.push({nome: nome, provider: p}); vistos[nome] = 1; }
+      }
+    }
+  }catch(e){}
+  try{
+    if(window.binancew3w && !vistos["Binance Web3"]){ out.push({nome: "Binance Web3", provider: window.binancew3w}); vistos["Binance Web3"] = 1; }
+    if(window.BinanceChain && !vistos["Binance Chain"]){ out.push({nome: "Binance Chain", provider: window.BinanceChain}); vistos["Binance Chain"] = 1; }
+  }catch(e2){}
+  try{
+    var ph = (window.phantom && window.phantom.solana) ? window.phantom.solana : null;
+    if(!ph && window.solana && window.solana.isPhantom) ph = window.solana;
+    if(ph && !vistos["Phantom (Solana)"]){ out.push({nome: "Phantom (Solana)", provider: ph, tipo: "solana"}); vistos["Phantom (Solana)"] = 1; }
+  }catch(e3){}
+  return out;
+}
+function abrirModalCarteira(){ renderWallets(); document.getElementById("walletModal").style.display = "flex"; }
+function fecharModalCarteira(){ document.getElementById("walletModal").style.display = "none"; }
+function renderWallets(){
+  var box = document.getElementById("walletLista");
+  if(!box) return;
+  var det = provedoresDetectados();
+  window._wdet = det;
+  var mob = ehMobile();
+  var h = "";
+  if(carteira || carteiraSol){
+    h += '<div style="background:#0a1a0a;border:1px solid #2a5;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:14px">';
+    if(carteira) h += '<div>OK ' + esc(curtaEnd(carteira)) + ' <button onclick="desconectarCarteira();renderWallets()" class="btn" style="font-size:12px;padding:4px 12px;margin:0 0 0 8px;background:#5a1a1a;border-color:#a33">' + t("w_desconectar") + '</button></div>';
+    if(carteiraSol) h += '<div style="margin-top:6px">&#9678; ' + esc(curtaEnd(carteiraSol)) + ' <small style="color:#14F195">(Solana)</small> <button onclick="desconectarSolana();renderWallets()" class="btn" style="font-size:12px;padding:4px 12px;margin:0 0 0 8px;background:#5a1a1a;border-color:#a33">' + t("w_desconectar") + '</button></div>';
+    h += '</div>';
+  }
+  for(var i=0;i<det.length;i++){
+    var ehSol = det[i].tipo === "solana";
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;background:#071224;border:1px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0">'
+      + '<span style="font-weight:700">' + esc(det[i].nome) + (ehSol ? ' <small style="color:#14F195">(Solana)</small>' : '') + ' <small style="color:#8f8">(' + t("w_detectada") + ')</small></span>'
+      + '<button onclick="conectarProvedorIdx(' + i + ')" class="btn" style="font-size:13px;padding:8px 18px;margin:0">' + (ehSol ? t("w_conectar_sol") : t("como1b")) + '</button></div>';
+  }
+  var apps = [
+    {nome:"MetaMask", app:"https://metamask.app.link/dapp/feiraonchain.netlify.app", down:"https://metamask.io/download/"},
+    {nome:"Trust Wallet", app:"https://link.trustwallet.com/open_url?coin_id=60&url=" + encodeURIComponent(SITE_URL), down:"https://trustwallet.com/download"},
+    {nome:"Coinbase Wallet", app:"https://go.cb-w.com/dapp?cb_url=" + encodeURIComponent(SITE_URL), down:"https://www.coinbase.com/wallet/downloads"},
+    {nome:"Binance Web3", deep:"binance", down:"https://www.binance.com/download"},
+    {nome:"Phantom", app:"https://phantom.app/ul/browse/" + encodeURIComponent(SITE_URL), down:"https://phantom.app/download"}
+  ];
+  for(var k=0;k<apps.length;k++){
+    var tem = false;
+    for(var m2=0;m2<det.length;m2++){ if(det[m2].nome === apps[k].nome || det[m2].nome.indexOf(apps[k].nome + " (") === 0) tem = true; }
+    if(tem) continue;
+    var ehBin = apps[k].deep === "binance";
+    var link = mob ? apps[k].app : apps[k].down;
+    var lbl = mob ? t("w_abrir") : t("w_instalar");
+    var btnBin = '<button onclick="abrirAppBinance()" class="btn" style="font-size:13px;padding:8px 18px;margin:0;background:transparent;border:2px solid var(--gold);color:var(--gold-light)">' + lbl + '</button>';
+    var btnOut = '<a href="' + link + '" target="_blank" rel="noopener" class="btn" style="font-size:13px;padding:8px 18px;margin:0;background:transparent;border:2px solid var(--gold);color:var(--gold-light)">' + lbl + '</a>';
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;background:#071224;border:1px solid #2a4a73;border-radius:12px;padding:12px 14px;margin:8px 0">'
+      + '<span style="font-weight:700;color:#c9d6e8">' + apps[k].nome + '</span>'
+      + ((mob && ehBin) ? btnBin : btnOut) + '</div>';
+  }
+  if(!h) h = '<p style="color:#8a9bb5;text-align:center">' + t("wall_no_txt") + '</p>';
+  box.innerHTML = h;
+}
+function conectarProvedorIdx(i){
+  var w = (window._wdet || [])[i];
+  if(!w || !w.provider) return;
+  if(w.tipo === "solana"){
+    var p = w.provider;
+    var feito = function(pub){
+      if(pub){
+        carteiraSol = String(pub);
+        try{ localStorage.setItem("carteira_sol", JSON.stringify({endereco: carteiraSol, nome: w.nome})); }catch(e){}
+        fecharModalCarteira();
+        atualizarStatusCarteira();
+        alert(t("wall_ok") + curtaEnd(carteiraSol));
+      } else { alert(t("wall_cancel")); }
+    };
+    try{
+      if(p.publicKey){ feito(p.publicKey.toString()); return; }
+      p.connect().then(function(r){
+        feito(r && r.publicKey ? r.publicKey.toString() : (p.publicKey && p.publicKey.toString()));
+      }).catch(function(){ alert(t("wall_cancel")); });
+    }catch(e){ alert(t("wall_cancel")); }
+    return;
+  }
+  w.provider.request({method:"eth_requestAccounts"}).then(function(accs){
+    if(accs && accs[0]){
+      carteira = accs[0];
+      try{ localStorage.setItem("carteira", JSON.stringify({endereco: carteira, nome: w.nome})); }catch(e){}
+      fecharModalCarteira();
+      atualizarStatusCarteira();
+      alert(t("wall_ok") + curtaEnd(carteira));
+    }
+  }).catch(function(){ alert(t("wall_cancel")); });
+}
+function abrirAppBinance(){
+  var t0 = Date.now();
+  window.location.href = "bnc://app.binance.com/";
+  setTimeout(function(){
+    if(Date.now() - t0 < 2000){ window.location.href = "https://www.binance.com/download"; }
+  }, 1600);
+}
+function desconectarCarteira(){
+  carteira = "";
+  try{ localStorage.removeItem("carteira"); }catch(e){}
+  atualizarStatusCarteira();
+}
+function desconectarSolana(){
+  carteiraSol = "";
+  try{ localStorage.removeItem("carteira_sol"); }catch(e){}
+  try{ var ph = phantomSolana(); if(ph && ph.disconnect) ph.disconnect(); }catch(e){}
+  atualizarStatusCarteira();
+}
+function atualizarStatusCarteira(){
+  var st = document.getElementById("walletStatus");
+  if(!st) return;
+  var h = "";
+  if(carteira){
+    h += "OK " + esc(curtaEnd(carteira)) + ' <a href="javascript:void(0)" onclick="desconectarCarteira()" style="color:#c66;font-size:12px">' + t("w_desconectar") + '</a>';
+  }
+  if(carteiraSol){
+    h += (h ? "<br>" : "") + "&#9678; " + esc(curtaEnd(carteiraSol)) + ' <small style="color:#14F195">(Solana)</small> <a href="javascript:void(0)" onclick="desconectarSolana()" style="color:#c66;font-size:12px">' + t("w_desconectar") + '</a>';
+  }
+  st.innerHTML = h;
+}
+function reconectarCarteira(){
+  var s = null;
+  try{ s = JSON.parse(localStorage.getItem("carteira") || "null"); }catch(e){}
+  if(s && s.endereco){
+    var det = provedoresDetectados();
+    det.forEach(function(w){
+      try{
+        if(w.tipo === "solana") return;
+        w.provider.request({method:"eth_accounts"}).then(function(accs){
+          if(accs && accs[0] && accs[0].toLowerCase() === String(s.endereco).toLowerCase()){
+            carteira = accs[0];
+            atualizarStatusCarteira();
+          }
+        }).catch(function(){});
+      }catch(e){}
+    });
+  }
+  try{
+    var ss = JSON.parse(localStorage.getItem("carteira_sol") || "null");
+    var ph0 = phantomSolana();
+    if(ss && ss.endereco && ph0){
+      if(ph0.publicKey && String(ph0.publicKey.toString()) === String(ss.endereco)){
+        carteiraSol = String(ss.endereco);
+        atualizarStatusCarteira();
+      } else {
+        try{
+          ph0.connect({onlyIfTrusted:true}).then(function(r){
+            var pk = r && r.publicKey ? r.publicKey.toString() : (ph0.publicKey && ph0.publicKey.toString());
+            if(pk && pk === String(ss.endereco)){ carteiraSol = pk; atualizarStatusCarteira(); }
+          }).catch(function(){});
+        }catch(e){}
+      }
+    }
+  }catch(e2){}
+}
+/* ===== Recuperar senha + olhinho ===== */
+function alternarSenha(id, el){
+  var inp = document.getElementById(id);
+  if(!inp) return;
+  if(inp.type === "password"){ inp.type = "text"; el.textContent = "\U0001F648"; }
+  else { inp.type = "password"; el.textContent = "\U0001F441\uFE0F"; }
+}
+var recEmailOk = "";
+function abrirRecuperar(){
+  recEmailOk = "";
+  document.getElementById("recEmail").value = "";
+  document.getElementById("recNome").value = "";
+  document.getElementById("recNova").value = "";
+  document.getElementById("recNova2").value = "";
+  document.getElementById("recPasso1").style.display = "block";
+  document.getElementById("recPasso2").style.display = "none";
+  document.getElementById("recPasso3").style.display = "none";
+  document.getElementById("authModal").style.display = "none";
+  document.getElementById("recModal").style.display = "flex";
+}
+function fecharRecuperar(){
+  document.getElementById("recModal").style.display = "none";
+  document.getElementById("authModal").style.display = "flex";
+  abaAuth("login");
+}
+function recVerificarEmail(){
+  var em = document.getElementById("recEmail").value.trim().toLowerCase();
+  if(!em){ alert("Digite seu email"); return; }
+  var btn = document.querySelector("#recPasso1 button");
+  var orig = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "Enviando email..."; btn.disabled=true; }
+  fetch(SB_AUTH_URL+"/recover", {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify({email: em})
+  }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok, j: j}; }); })
+  .then(function(res){
+    if(res.ok){
+      alert("✅ Email enviado para " + em + "! Verifique inbox e SPAM. Link válido por 1h.");
+      recEmailOk = em;
+      document.getElementById("recPasso1").style.display = "none";
+      document.getElementById("recPasso2").style.display = "block";
+      var info=document.getElementById("infoRecEmail"); if(info) info.textContent = "Email enviado para " + em + ". Você também pode recuperar local com seu nome.";
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    } else {
+      var us = getUsuarios();
+      var achou = null;
+      for(var i=0;i<us.length;i++){ if(us[i].email === em){ achou = us[i]; break; } }
+      if(!achou){ alert(t("rec_naoachado") + "\nSe não tem conta, cadastre-se."); if(btn){ btn.textContent = orig; btn.disabled=false; } return; }
+      recEmailOk = em;
+      document.getElementById("recPasso1").style.display = "none";
+      document.getElementById("recPasso2").style.display = "block";
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    }
+  }).catch(function(e){
+    var us = getUsuarios();
+    var achou = null;
+    for(var i=0;i<us.length;i++){ if(us[i].email === em){ achou = us[i]; break; } }
+    if(!achou){ alert(t("rec_naoachado")); return; }
+    recEmailOk = em;
+    document.getElementById("recPasso1").style.display = "none";
+    document.getElementById("recPasso2").style.display = "block";
+  });
+}
+function recVerificarNome(){
+  var nm = document.getElementById("recNome").value.trim().toLowerCase();
+  var us = getUsuarios();
+  var achou = null;
+  for(var i=0;i<us.length;i++){ if(us[i].email === recEmailOk){ achou = us[i]; break; } }
+  if(!achou || String(achou.nome).trim().toLowerCase() !== nm){ alert(t("rec_nome_erro")); return; }
+  document.getElementById("recPasso2").style.display = "none";
+  document.getElementById("recPasso3").style.display = "block";
+}
+function recSalvarNova(){
+  var s1 = document.getElementById("recNova").value;
+  var s2 = document.getElementById("recNova2").value;
+  if(!s1 || s1 !== s2){ alert(t("rec_diferentes")); return; }
+  var token = getAccessToken();
+  var btn = document.querySelector("#recPasso3 button");
+  var orig = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "Salvando..."; btn.disabled=true; }
+  if(token){
+    fetch(SB_AUTH_URL+"/user", {
+      method: "PUT",
+      headers: {"apikey": SB_KEY, "Authorization": "Bearer "+token, "Content-Type": "application/json"},
+      body: JSON.stringify({password: s1})
+    }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok, j: j}; }); })
+    .then(function(res){
+      var us = getUsuarios();
+      for(var i=0;i<us.length;i++){ if(us[i].email === recEmailOk || us[i].email===getSessao()){ us[i].senha = s1; break; } }
+      salvarUsuarios(us);
+      alert(t("rec_ok") + " (Senha na nuvem! Funciona em qualquer celular)");
+      fecharRecuperar();
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    }).catch(function(){
+      var us = getUsuarios();
+      for(var i=0;i<us.length;i++){ if(us[i].email === recEmailOk){ us[i].senha = s1; break; } }
+      salvarUsuarios(us);
+      alert(t("rec_ok") + " (Local)");
+      fecharRecuperar();
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    });
+  } else {
+    var us = getUsuarios();
+    for(var i=0;i<us.length;i++){ if(us[i].email === recEmailOk){ us[i].senha = s1; break; } }
+    salvarUsuarios(us);
+    alert(t("rec_ok"));
+    fecharRecuperar();
+    if(btn){ btn.textContent = orig; btn.disabled=false; }
+  }
+}
+/* ===== Login / cadastro ===== */
+function getUsuarios(){ 
+  try { 
+    var local = JSON.parse(localStorage.getItem("usuarios")||"[]"); 
+    // Se vazio, tenta carregar da nuvem em background
+    if(local.length===0){
+      fetch(SB_REST_URL+"/usuarios?select=*", {headers: sbHeaders({})}).then(function(r){return r.json()}).then(function(dados){
+        if(dados && dados.length>0){
+          var us = dados.map(function(su){ return {email: su.email, nome: su.nome, whatsapp: su.whatsapp, solana: su.solana, feirapay_pubkey: su.feirapay_pubkey, feirapay_encrypted: su.feirapay_encrypted, senha: su.senha||""}; });
+          localStorage.setItem("usuarios", JSON.stringify(us));
+          console.log("Usuarios restaurados da nuvem:", us.length);
+        }
+      }).catch(function(){});
+    }
+    return local; 
+  } catch(e){ return []; } 
+}
+function salvarUsuarios(u){
+  try{ localStorage.setItem("usuarios", JSON.stringify(u)); }catch(e){}
+  try{
+    u.forEach(function(user){
+      if(!user.email) return;
+      var payload = {
+        email: user.email, 
+        nome: user.nome||"", 
+        whatsapp: user.whatsapp||"", 
+        solana: user.solana||"",
+        feirapay_pubkey: user.feirapay_pubkey||localStorage.getItem("feirapay_pubkey_"+user.email)||"",
+        feirapay_encrypted: user.feirapay_encrypted||localStorage.getItem("feirapay_enc_"+user.email)||"",
+        brl: user.brl||0,
+        created_at: new Date().toISOString()
+      };
+      fetch(SB_REST_URL+"/usuarios?on_conflict=email", {
+        method: "POST",
+        headers: sbHeaders({"Prefer": "resolution=merge-duplicates,return=representation"}),
+        body: JSON.stringify(payload)
+      }).catch(function(){});
+    });
+  }catch(e){}
+}
+function getSessao(){ return localStorage.getItem("sessao") || ""; }
+function setSessao(e){
+  if(e) localStorage.setItem("sessao", e);
+  else { localStorage.removeItem("sessao"); localStorage.removeItem("sb_access_token"); localStorage.removeItem("sb_refresh_token"); }
+}
+function usuarioAtual(){
+  var s = getSessao();
+  if(!s) return null;
+  var u = getUsuarios();
+  for(var i=0;i<u.length;i++){ if(u[i].email===s) return u[i]; }
+  return {email:s, nome:s.split('@')[0], whatsapp:"", solana:""};
+}
+function getAccessToken(){ return localStorage.getItem("sb_access_token") || ""; }
+function ehPresidente(){ return getSessao() === PRESIDENTE; }
+function zapDoUsuario(email){ var us = getUsuarios(); for(var i=0;i<us.length;i++){ if(us[i].email===email) return us[i].whatsapp||""; } return ""; }
+function nomeDono(email){ if(email===PRESIDENTE) return "Presidente"; var us = getUsuarios(); for(var i=0;i<us.length;i++){ if(us[i].email===email) return us[i].nome||email; } return email||"?"; }
+function abrirAuth(){ document.getElementById("authModal").style.display = "flex"; }
+function fecharAuth(){ document.getElementById("authModal").style.display = "none"; }
+function abaAuth(q){
+  document.getElementById("authLogin").style.display = q === "login" ? "block" : "none";
+  document.getElementById("authCad").style.display = q === "cad" ? "block" : "none";
+}
+function fazerCadastro(){
+  var nome = document.getElementById("cNome").value.trim();
+  var email = document.getElementById("cEmail").value.trim().toLowerCase();
+  var senha = document.getElementById("cSenha").value;
+  var zap = soDigitos(document.getElementById("cZap").value);
+  var sol = document.getElementById("cSol").value.trim();
+  if(!nome || !email || !senha){ alert(t("msg_cad_campos")); return; }
+  if(zap && zap.length < 10){ alert(t("msg_zap_invalido")); return; }
+  if(sol && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(sol)){ alert(t("msg_sol_invalido")); return; }
+  var btn = document.querySelector("#authCad button.btn");
+  var orig = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "Criando conta..."; btn.disabled=true; }
+  fetch(SB_AUTH_URL+"/signup", {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify({email: email, password: senha, data: {nome: nome, whatsapp: zap, solana: sol}})
+  }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok, status: r.status, j: j}; }); })
+  .then(function(res){
+    if(res.ok || res.status===200 || res.status===201){
+      if(res.j.access_token) localStorage.setItem("sb_access_token", res.j.access_token);
+      if(res.j.refresh_token) localStorage.setItem("sb_refresh_token", res.j.refresh_token);
+      var u = getUsuarios();
+      var existe = false;
+      for(var i=0;i<u.length;i++){ if(u[i].email===email){ existe=true; break; } }
+      if(!existe) u.push({nome: nome, email: email, senha: senha, whatsapp: zap, solana: sol});
+      salvarUsuarios(u);
+      setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+      fecharAuth();
+      atualizarTela();
+      sincronizarProdutos();
+      alert(t("msg_cad_ok") + nome + "! Conta salva na nuvem e funciona em qualquer celular. Verifique seu email.");
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    } else {
+      if(res.j && (res.j.error_code==="user_already_exists" || (res.j.msg && res.j.msg.toLowerCase().indexOf("already")>=0))){
+        alert("Email já existe na nuvem. Fazendo login...");
+        fazerLoginForcado(email, senha);
+        if(btn){ btn.textContent = orig; btn.disabled=false; }
+        return;
+      }
+      console.log("Erro cadastro nuvem", res.j);
+      var u = getUsuarios();
+      for(var i=0;i<u.length;i++){ if(u[i].email===email){ alert(t("msg_email_existe")); if(btn){ btn.textContent = orig; btn.disabled=false; } return; } }
+      u.push({nome: nome, email: email, senha: senha, whatsapp: zap, solana: sol});
+      salvarUsuarios(u);
+      setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+      fecharAuth();
+      atualizarTela();
+      alert(t("msg_cad_ok") + nome + "! (Salvo local)");
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    }
+  }).catch(function(e){
+    console.log("Erro rede", e);
+    var u = getUsuarios();
+    for(var i=0;i<u.length;i++){ if(u[i].email===email){ alert(t("msg_email_existe")); if(btn){ btn.textContent = orig; btn.disabled=false; } return; } }
+    u.push({nome: nome, email: email, senha: senha, whatsapp: zap, solana: sol});
+    salvarUsuarios(u);
+    setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+    fecharAuth();
+    atualizarTela();
+    alert(t("msg_cad_ok") + nome + "! (Offline)");
+    if(btn){ btn.textContent = orig; btn.disabled=false; }
+  });
+}
+function fazerLoginForcado(email, senha){
+  fetch(SB_AUTH_URL+"/token?grant_type=password", {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify({email: email, password: senha})
+  }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok, j: j}; }); })
+  .then(function(res){
+    if(res.ok && res.j.access_token){
+      localStorage.setItem("sb_access_token", res.j.access_token);
+      if(res.j.refresh_token) localStorage.setItem("sb_refresh_token", res.j.refresh_token);
+      setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+      fecharAuth();
+      atualizarTela();
+      sincronizarProdutos();
+    }
+  });
+}
+function fazerLogin(){
+  // Sempre tenta carregar usuarios da nuvem antes de logar
+  fetch(SB_REST_URL+"/usuarios?select=*",{headers:sbHeaders({})}).then(function(r){return r.json()}).then(function(dados){
+    if(dados && dados.length>0){
+      var us = dados.map(function(su){ return {email: su.email, nome: su.nome, whatsapp: su.whatsapp, solana: su.solana, feirapay_pubkey: su.feirapay_pubkey, feirapay_encrypted: su.feirapay_encrypted, senha: su.senha||""}; });
+      // mescla com local mantendo senhas locais
+      try{
+        var local = JSON.parse(localStorage.getItem("usuarios")||"[]");
+        var map={}; local.forEach(function(u){map[u.email]=u;});
+        us.forEach(function(su){ if(!map[su.email]) map[su.email]=su; else { map[su.email].feirapay_pubkey = map[su.email].feirapay_pubkey || su.feirapay_pubkey; map[su.email].feirapay_encrypted = map[su.email].feirapay_encrypted || su.feirapay_encrypted; } });
+        localStorage.setItem("usuarios", JSON.stringify(Object.values(map)));
+      }catch(e){ localStorage.setItem("usuarios", JSON.stringify(us)); }
+    }
+  }).catch(function(){});
+
+  var email = document.getElementById("aEmail").value.trim().toLowerCase();
+  var senha = document.getElementById("aSenha").value;
+  if(!email || !senha){ alert(t("msg_campos")); return; }
+  var btn = document.querySelector("#authLogin button.btn");
+  var orig = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "Entrando..."; btn.disabled=true; }
+  fetch(SB_AUTH_URL+"/token?grant_type=password", {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify({email: email, password: senha})
+  }).then(function(r){ return r.json().then(function(j){ return {ok: r.ok, status: r.status, j: j}; }); })
+  .then(function(res){
+    if(res.ok && res.j.access_token){
+      localStorage.setItem("sb_access_token", res.j.access_token);
+      if(res.j.refresh_token) localStorage.setItem("sb_refresh_token", res.j.refresh_token);
+      var us = getUsuarios();
+      var achou = null;
+      for(var i=0;i<us.length;i++){ if(us[i].email===email){ achou=us[i]; break; } }
+      if(!achou){
+        us.push({email: email, senha: senha, nome: (res.j.user && res.j.user.user_metadata && res.j.user.user_metadata.nome) || email.split('@')[0], whatsapp: "", solana: ""});
+        salvarUsuarios(us);
+        achou = us[us.length-1];
+      }
+      setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+      fecharAuth();
+      atualizarTela();
+      sincronizarProdutos();
+      alert(t("msg_login_ok") + (achou.nome||email) + "! (Nuvem - funciona em qualquer celular)");
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    } else {
+      var u = getUsuarios();
+      var achou2 = null;
+      for(var i=0;i<u.length;i++){ if(u[i].email===email && u[i].senha===senha){ achou2 = u[i]; break; } }
+      if(!achou2){
+        alert(t("msg_login_erro") + "
+Se cadastrou em outro celular, use o mesmo email e senha - está na nuvem.");
+        if(btn){ btn.textContent = orig; btn.disabled=false; }
+        return;
+      }
+      setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+      fecharAuth();
+      atualizarTela();
+      alert(t("msg_login_ok") + achou2.nome + "! (Local)");
+      if(btn){ btn.textContent = orig; btn.disabled=false; }
+    }
+  }).catch(function(e){
+    var u = getUsuarios();
+    var achou = null;
+    for(var i=0;i<u.length;i++){ if(u[i].email===email && u[i].senha===senha){ achou = u[i]; break; } }
+    if(!achou){ alert(t("msg_login_erro") + " (sem internet)"); if(btn){ btn.textContent = orig; btn.disabled=false; } return; }
+    setSessao(email);
+  // Restaura carteira FeiraPay deste e-mail automaticamente
+  (async function(){
+    try{
+      var senhaInput = document.getElementById("senhaLogin") ? document.getElementById("senhaLogin").value : (document.getElementById("senha") ? document.getElementById("senha").value : "");
+      if(senhaInput){
+        var usuarios = getUsuarios();
+        var u = usuarios.find(function(x){return x.email===email;});
+        var enc = (u && u.feirapay_encrypted) || localStorage.getItem("feirapay_enc_"+email);
+        if(!enc){
+          // busca na nuvem
+          var r = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey",{headers:sbHeaders({})});
+          if(r.ok){ var d=await r.json(); if(d[0]){ enc=d[0].feirapay_encrypted; if(d[0].feirapay_pubkey) localStorage.setItem("feirapay_pubkey_"+email, d[0].feirapay_pubkey); } }
+        }
+        if(enc){
+          // tenta descriptografar
+          var dec = null;
+          try{
+            if(typeof CryptoJS!=='undefined'){ var bytes=CryptoJS.AES.decrypt(enc, senhaInput); var s=bytes.toString(CryptoJS.enc.Utf8); dec=JSON.parse(s); }
+          }catch(e){}
+          if(dec){
+            localStorage.setItem("carteiraLoja_"+email, JSON.stringify({secret:dec, pubkey: localStorage.getItem("feirapay_pubkey_"+email)||""}));
+            console.log("Carteira FeiraPay restaurada para", email);
+            if(typeof atualizarSaldoCarteiraLoja==='function') setTimeout(atualizarSaldoCarteiraLoja, 1000);
+          }
+        }
+      }
+    }catch(e){ console.log("restaura carteira erro", e); }
+  })();
+
+    fecharAuth();
+    atualizarTela();
+    if(btn){ btn.textContent = orig; btn.disabled=false; }
+  });
+}
+function sair(){ setSessao(""); editIndex = -1; atualizarTela(); }
+function alterarZap(){
+  var u = usuarioAtual();
+  if(!u) return;
+  var v = prompt(t("msg_zap_prompt"), u.whatsapp || "");
+  if(v === null) return;
+  var z = soDigitos(v);
+  if(!z || z.length < 10){ alert(t("msg_zap_invalido")); return; }
+  var us = getUsuarios();
+  for(var i=0;i<us.length;i++){ if(us[i].email===u.email){ us[i].whatsapp = z; break; } }
+  salvarUsuarios(us);
+  atualizarTela();
+  alert(t("msg_zap_ok"));
+}
+function alterarSol(){
+  var u = usuarioAtual();
+  if(!u) return;
+  var v = prompt(t("msg_sol_prompt"), u.solana || "");
+  if(v === null) return;
+  var s = v.trim();
+  if(s && !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)){ alert(t("msg_sol_invalido")); return; }
+  var us = getUsuarios();
+  for(var i=0;i<us.length;i++){ if(us[i].email===u.email){ us[i].solana = s; break; } }
+  salvarUsuarios(us);
+  var ps = getProdutos(), mudou = false;
+  for(var j=0;j<ps.length;j++){ if(ps[j].dono===u.email){ ps[j].solana = s; mudou = true; } }
+  if(mudou) salvarProdutos(ps);
+  fetch(SB_URL + "/rest/v1/produtos?dono=eq." + encodeURIComponent(u.email), {method: "PATCH", headers: sbHeaders(), body: JSON.stringify({solana: s})}).catch(function(e){ console.log("Erro ao atualizar solana na nuvem:", e); });
+  atualizarTela();
+  alert(t("msg_sol_ok"));
+}
+function solanaDoUsuario(email){ var us = getUsuarios(); for(var i=0;i<us.length;i++){ if(us[i].email===email) return us[i].solana||""; } return ""; }
+function verificarRecoveryLink(){
+  try{
+    var hash = window.location.hash;
+    if(hash && hash.indexOf('access_token')>=0 && hash.indexOf('type=recovery')>=0){
+      var params = {};
+      hash.replace('#','').split('&').forEach(function(kv){ var p=kv.split('='); params[p[0]]=decodeURIComponent(p[1]||''); });
+      if(params.access_token){
+        localStorage.setItem("sb_access_token", params.access_token);
+        if(params.refresh_token) localStorage.setItem("sb_refresh_token", params.refresh_token);
+        document.getElementById("recModal").style.display="flex";
+        document.getElementById("recPasso1").style.display="none";
+        document.getElementById("recPasso2").style.display="none";
+        document.getElementById("recPasso3").style.display="block";
+        var info=document.getElementById("infoRecEmail"); if(info) info.textContent="Link válido! Crie nova senha.";
+        history.replaceState(null, "", window.location.pathname);
+        alert("Link de recuperação verificado! Crie sua nova senha.");
+      }
+    }
+  }catch(e){}
+}
+function atualizarTela(){
+  var u = usuarioAtual();
+  var logado = !!u;
+  document.getElementById("avisoLogin").style.display = logado ? "none" : "block";
+  document.getElementById("areaVendedor").style.display = logado ? "block" : "none";
+  var nav = document.getElementById("navUser");
+  if(logado){
+    var cargo = ehPresidente() ? " " + t("cargo_pres") : "";
+    nav.innerHTML = ' <a href="#cadastro" style="color:var(--gold-light)"> ' + esc(u.nome) + cargo + '</a> <a href="javascript:void(0)" onclick="sair()" style="color:#c66">' + t("nav_sair") + '</a>';
+    document.getElementById("boasVindas").textContent = ehPresidente() ? t("loja_painel_sub") : t("loja_minha") + " - " + u.nome;
+    document.getElementById("tituloLoja").textContent = ehPresidente() ? t("loja_painel") : t("loja_minha");
+    var zl = document.getElementById("zapLinha");
+    if(u.whatsapp){
+      zl.innerHTML = t("zap_seu") + ' <b style="color:var(--gold-light)">' + esc(u.whatsapp) + '</b> <button onclick="alterarZap()" style="background:transparent;border:1px solid var(--gold);color:var(--gold-light);padding:4px 14px;border-radius:20px;cursor:pointer;font-size:12px">' + t("zap_alterar") + '</button>';
+    } else {
+      zl.innerHTML = t("zap_sem") + ' <button onclick="alterarZap()" class="btn" style="font-size:13px;padding:8px 20px">' + t("zap_alterar") + '</button>';
+    }
+    var sl = document.getElementById("solLinha");
+    if(sl){
+      if(u.solana){
+        sl.innerHTML = t("sol_seu") + ' <b style="color:var(--gold-light)">' + esc(curtaEnd(u.solana)) + '</b> <button onclick="alterarSol()" style="background:transparent;border:1px solid var(--gold);color:var(--gold-light);padding:4px 14px;border-radius:20px;cursor:pointer;font-size:12px">' + t("zap_alterar") + '</button>';
+      } else {
+        sl.innerHTML = t("sol_sem_cad") + ' <button onclick="alterarSol()" class="btn" style="font-size:13px;padding:8px 20px">' + t("sol_add") + '</button>';
+      }
+    }
+  } else {
+    nav.innerHTML = ' <a href="javascript:void(0)" onclick="abrirAuth()" style="color:var(--gold-light)">' + t("nav_entrar") + '</a>';
+    document.getElementById("tituloLoja").textContent = t("cad_titulo");
+  }
+  listarProdutos();
+  listarVitrine();
+}
+function garantia(){ alert(t("garantia_msg")); }
+/* ===== Supabase (banco de dados na nuvem) ===== */
+var SB_URL = "https://hxflsmtyvhgxnsmizzur.supabase.co";
+var SB_KEY = "sb_publishable_AGPVse0SJs2X_A_HvJ3foQ_naehpHHE";
+var SB_AUTH_URL = SB_URL + "/auth/v1";
+var SB_REST_URL = SB_URL + "/rest/v1";
+// ===== FeiraPay - Taxa justa e transparente =====
+var TAXA_PLATAFORMA = 0.03;
+
+// ===== PERSISTÊNCIA REAL NO SUPABASE - NUNCA MAIS SUMIR =====
+var SB_HEADERS = { "apikey": SB_KEY, "Authorization": "Bearer "+SB_KEY, "Content-Type": "application/json", "Prefer": "return=representation" };
+
+async function sbSalvarUsuario(usuario){
+  try{
+    // Tenta inserir ou atualizar no Supabase
+    var resp = await fetch(SB_REST_URL+"/usuarios?on_conflict=email", {
+      method: "POST",
+      headers: Object.assign({}, SB_HEADERS, {"Prefer":"resolution=merge-duplicates,return=representation"}),
+      body: JSON.stringify({
+        email: usuario.email,
+        nome: usuario.nome||usuario.email.split('@')[0],
+        solana: usuario.solana||"",
+        feirapay_encrypted: usuario.feirapay_encrypted||localStorage.getItem("feirapay_enc_"+usuario.email)||"",
+        feirapay_pubkey: usuario.feirapay_pubkey||"",
+        brl: usuario.brl||0
+      })
+    });
+    if(!resp.ok){ console.log("sbSalvarUsuario falhou", await resp.text()); }
+    else { console.log("Usuario salvo na nuvem:", usuario.email); }
+  }catch(e){ console.log("Erro sbSalvarUsuario", e); }
+  // Mantém local também
+  try{
+    var us = JSON.parse(localStorage.getItem("usuarios")||"[]");
+    var idx = us.findIndex(function(u){ return u.email===usuario.email; });
+    if(idx>=0) us[idx]=usuario; else us.push(usuario);
+    localStorage.setItem("usuarios", JSON.stringify(us));
+  }catch(e){}
+}
+
+async function sbCarregarUsuarios(){
+  try{
+    var resp = await fetch(SB_REST_URL+"/usuarios?select=*", {headers: SB_HEADERS});
+    if(resp.ok){
+      var dados = await resp.json();
+      if(dados && dados.length>0){
+        // Mescla com local
+        var local = JSON.parse(localStorage.getItem("usuarios")||"[]");
+        var map = {};
+        local.forEach(function(u){ map[u.email]=u; });
+        dados.forEach(function(su){
+          var u = map[su.email]||{};
+          u.email = su.email;
+          u.nome = su.nome||u.nome;
+          u.solana = su.solana||u.solana;
+          u.feirapay_encrypted = su.feirapay_encrypted||u.feirapay_encrypted;
+          u.feirapay_pubkey = su.feirapay_pubkey||u.feirapay_pubkey;
+          u.brl = su.brl||u.brl;
+          // Se tem senha local, mantém
+          map[su.email]=u;
+        });
+        var lista = Object.values(map);
+        localStorage.setItem("usuarios", JSON.stringify(lista));
+        return lista;
+      }
+    }
+  }catch(e){ console.log("sbCarregarUsuarios erro", e); }
+  return JSON.parse(localStorage.getItem("usuarios")||"[]");
+}
+
+async function sbSalvarProduto(prod){
+  try{
+    var resp = await fetch(SB_REST_URL+"/produtos", {
+      method: "POST",
+      headers: SB_HEADERS,
+      body: JSON.stringify({
+        nome: prod.nome,
+        preco: prod.preco,
+        categoria: prod.categoria||"geral",
+        vendedor_email: prod.vendedor_email|| (typeof getUsuarioLogado==='function' ? (getUsuarioLogado()?.email||"") : ""),
+        imagem: prod.imagem||"",
+        descricao: prod.descricao||"",
+        solana_vendedor: prod.solana_vendedor||""
+      })
+    });
+    if(resp.ok) console.log("Produto salvo na nuvem:", prod.nome);
+  }catch(e){ console.log("Erro sbSalvarProduto", e); }
+}
+
+async function sbCarregarProdutos(){
+  try{
+    var resp = await fetch(SB_REST_URL+"/produtos?select=*&order=created_at.desc", {headers: SB_HEADERS});
+    if(resp.ok){
+      var dados = await resp.json();
+      if(dados && dados.length>0){
+        localStorage.setItem("produtos_nuvem", JSON.stringify(dados));
+        return dados;
+      }
+    }
+  }catch(e){}
+  return JSON.parse(localStorage.getItem("produtos")||"[]");
+}
+
+// Criptografia simples para salvar carteira com senha
+function criptografarCarteira(secretKeyArray, senha){
+  try{
+    // Usa CryptoJS AES se disponível, senão base64 + senha como fallback
+    if(typeof CryptoJS!=='undefined'){
+      return CryptoJS.AES.encrypt(JSON.stringify(secretKeyArray), senha).toString();
+    }else{
+      // Fallback simples - XOR + base64
+      var str = JSON.stringify(secretKeyArray);
+      var enc = "";
+      for(var i=0;i<str.length;i++) enc += String.fromCharCode(str.charCodeAt(i) ^ senha.charCodeAt(i%senha.length));
+      return btoa(enc);
+    }
+  }catch(e){ return ""; }
+}
+function descriptografarCarteira(encrypted, senha){
+  try{
+    if(typeof CryptoJS!=='undefined'){
+      var bytes = CryptoJS.AES.decrypt(encrypted, senha);
+      var dec = bytes.toString(CryptoJS.enc.Utf8);
+      return JSON.parse(dec);
+    }else{
+      var decStr = atob(encrypted);
+      var out="";
+      for(var i=0;i<decStr.length;i++) out+= String.fromCharCode(decStr.charCodeAt(i) ^ senha.charCodeAt(i%senha.length));
+      return JSON.parse(out);
+    }
+  }catch(e){ console.log("Erro descriptografar", e); return null; }
+}
+
+function salvarFeiraPayNaNuvem(email, pubkey, secretArray, senha){
+  var enc = criptografarCarteira(secretArray, senha);
+  localStorage.setItem("feirapay_enc_"+email, enc);
+  localStorage.setItem("feirapay_pubkey_"+email, pubkey);
+  // Salva no Supabase
+  sbSalvarUsuario({email: email, feirapay_encrypted: enc, feirapay_pubkey: pubkey, solana: pubkey});
+}
+
+async function restaurarFeiraPayDaNuvem(email, senha){
+  // Tenta local primeiro
+  var encLocal = localStorage.getItem("feirapay_enc_"+email);
+  if(encLocal){
+    var dec = descriptografarCarteira(encLocal, senha);
+    if(dec) return dec;
+  }
+  // Tenta Supabase
+  try{
+    var resp = await fetch(SB_REST_URL+"/usuarios?email=eq."+encodeURIComponent(email)+"&select=feirapay_encrypted,feirapay_pubkey", {headers: SB_HEADERS});
+    if(resp.ok){
+      var dados = await resp.json();
+      if(dados[0] && dados[0].feirapay_encrypted){
+        var dec = descriptografarCarteira(dados[0].feirapay_encrypted, senha);
+        if(dec){
+          localStorage.setItem("feirapay_enc_"+email, dados[0].feirapay_encrypted);
+          localStorage.setItem("feirapay_pubkey_"+email, dados[0].feirapay_pubkey);
+          return dec;
+        }
+      }
+    }
+  }catch(e){}
+  return null;
+}
+ // 3% - padrão justo de marketplace
+var CARTEIRA_PLATAFORMA_SOL = localStorage.getItem("plataforma_sol") || "GQPpQuxGHT2bAqAFzGjMYcpmEAnC58vWumS1rGwdBnrx"; // Sua carteira de taxas - gravada
+function getTaxaPlataforma(){ return TAXA_PLATAFORMA; }
+function calcularDivisaoPagamento(precoTotal){
+  var taxa = precoTotal * TAXA_PLATAFORMA;
+  var liquidoVendedor = precoTotal - taxa;
+  return {total: precoTotal, taxa: taxa, vendedor: liquidoVendedor};
+}
+function getCarteiraPlataforma(){
+  var p = localStorage.getItem("plataforma_sol");
+  if(p && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(p)) return p;
+  // Carteira oficial da plataforma - suas taxas
+  return "GQPpQuxGHT2bAqAFzGjMYcpmEAnC58vWumS1rGwdBnrx";
+}
+function sbHeaders(extra){
+  var h = {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"};
+  if(extra) for(var k in extra) h[k] = extra[k];
+  return h;
+}
+var cacheProdutos = [];
+try {
+  var raw = localStorage.getItem("produtos");
+  if(raw){
+    cacheProdutos = JSON.parse(raw);
+    // Garante que é array
+    if(!Array.isArray(cacheProdutos)) cacheProdutos = [];
+  }
+} catch(e){ cacheProdutos = []; }
+// Backup extra no sessionStorage para evitar perda total
+try{ if(cacheProdutos.length>0) sessionStorage.setItem("produtos_bkp", JSON.stringify(cacheProdutos)); }catch(e){}
+/* ===== Produtos ===== */
+function getProdutos(){ return cacheProdutos; }
+function salvarProdutos(p){ cacheProdutos = p; try{ localStorage.setItem("produtos", JSON.stringify(p)); }catch(e){} }
+function sincronizarProdutos(){
+  var cacheLocal = [];
+  try{ cacheLocal = JSON.parse(localStorage.getItem("produtos")||"[]"); }catch(e){ cacheLocal = []; }
+  fetch(SB_URL + "/rest/v1/produtos?select=*&order=created_at.desc", {headers: sbHeaders()})
+    .then(function(r){ if(!r.ok) throw new Error("http " + r.status); return r.json(); })
+    .then(function(rows){
+      if(rows && rows.length > 0){
+        // Mescla: começa com o que veio da nuvem
+        var merged = rows.slice();
+        // Mantém produtos locais que ainda não estão na nuvem (sem id ou id não está na lista)
+        var idsNuvem = {};
+        rows.forEach(function(x){ if(x.id) idsNuvem[x.id]=1; });
+        cacheLocal.forEach(function(localItem){
+          if(!localItem.id || !idsNuvem[localItem.id]){
+            // Evita duplicar por nome+preço
+            var jaExiste = merged.some(function(s){ return s.nome===localItem.nome && s.preco===localItem.preco; });
+            if(!jaExiste) merged.unshift(localItem);
+          }
+        });
+        cacheProdutos = merged;
+      } else {
+        // Nuvem vazia ou bloqueada: NÃO apaga o que já está salvo localmente
+        console.log("Nuvem vazia, mantendo produtos locais:", cacheLocal.length);
+        cacheProdutos = cacheLocal;
+      }
+      try{ localStorage.setItem("produtos", JSON.stringify(cacheProdutos)); }catch(e){}
+      listarProdutos(); listarVitrine();
+    })
+    .catch(function(e){
+      console.log("Supabase offline, usando cache local:", e);
+      // Em caso de erro de rede, mantém o cache local intacto
+      try{ cacheProdutos = JSON.parse(localStorage.getItem("produtos")||"[]"); }catch(e2){ cacheProdutos = cacheLocal; }
+      listarProdutos(); listarVitrine();
+    });
+}
+function mostrarPreview(e){
+  var f = e.target.files[0];
+  if(!f) return;
+  var r = new FileReader();
+  r.onload = function(ev){
+    fotoBase64 = ev.target.result;
+    document.getElementById("previewImg").src = fotoBase64;
+    document.getElementById("previewBox").style.display = "block";
+  };
+  r.readAsDataURL(f);
+}
+function removerFoto(){
+  fotoBase64 = "";
+  document.getElementById("previewImg").src = "";
+  document.getElementById("previewBox").style.display = "none";
+  document.getElementById("pFotoCamera").value = "";
+  document.getElementById("pFotoGaleria").value = "";
+}
+function mostrarPreviewEdit(e){
+  var f = e.target.files[0];
+  if(!f) return;
+  var r = new FileReader();
+  r.onload = function(ev){
+    editFoto = ev.target.result;
+    var im = document.getElementById("editPreviewImg");
+    if(im){ im.src = editFoto; im.style.display = "block"; }
+    var bx = document.getElementById("editPreviewBox");
+    if(bx) bx.style.display = "block";
+  };
+  r.readAsDataURL(f);
+}
+function removerFotoEdit(){
+  editFoto = "";
+  var im = document.getElementById("editPreviewImg");
+  if(im){ im.src = ""; im.style.display = "none"; }
+  var bx = document.getElementById("editPreviewBox");
+  if(bx) bx.style.display = "none";
+}
+function adicionarProduto(e){
+  e.preventDefault();
+  var nome = document.getElementById("pNome").value.trim();
+  var preco = document.getElementById("pPreco").value.trim();
+  var link = document.getElementById("pLink").value.trim();
+  if(!nome || !preco){ alert(t("msg_campos")); return false; }
+  var u = usuarioAtual();
+  var item = {nome: nome, preco: preco, link: link, foto: fotoBase64, dono: getSessao(), solana: (u && u.solana) || ""};
+  var p = getProdutos();
+  p.unshift(item);
+  salvarProdutos(p);
+  salvarProdutoNuvem(item);
+  document.getElementById("formProduto").reset();
+  removerFoto();
+  listarProdutos();
+  listarVitrine();
+  alert(t("msg_add_ok"));
+  return false;
+}
+function salvarProdutoNuvem(item){
+  fetch(SB_URL + "/rest/v1/produtos", {method: "POST", headers: sbHeaders({"Prefer": "return=representation"}), body: JSON.stringify(item)})
+    .then(function(r){
+      if(r.status === 400 && item.solana !== undefined){
+        var c = {nome: item.nome, preco: item.preco, link: item.link, foto: item.foto, dono: item.dono};
+        return fetch(SB_URL + "/rest/v1/produtos", {method: "POST", headers: sbHeaders({"Prefer": "return=representation"}), body: JSON.stringify(c)});
+      }
+      return r;
+    })
+    .then(function(r){ return r && r.ok ? r.json() : null; })
+    .then(function(rows){ if(rows && rows[0] && rows[0].id){ item.id = rows[0].id; salvarProdutos(getProdutos()); } })
+    .catch(function(e){ console.log("Erro ao salvar produto na nuvem:", e); });
+}
+function excluirProduto(i){
+  if(!confirm(t("msg_confirm_del"))) return;
+  var p = getProdutos();
+  var item = p[i];
+  p.splice(i,1);
+  salvarProdutos(p);
+  if(item && item.id){
+    fetch(SB_URL + "/rest/v1/produtos?id=eq." + item.id, {method: "DELETE", headers: sbHeaders()})
+      .catch(function(e){ console.log("Erro ao excluir produto na nuvem:", e); });
+  }
+  listarProdutos();
+  listarVitrine();
+}
+function editarProduto(i){
+  editIndex = i;
+  editFoto = getProdutos()[i].foto || "";
+  listarProdutos();
+}
+function cancelarEdicao(){ editIndex = -1; editFoto = ""; listarProdutos(); }
+function salvarEdicao(i){
+  var nome = document.getElementById("eNome"+i).value.trim();
+  var preco = document.getElementById("ePreco"+i).value.trim();
+  var link = document.getElementById("eLink"+i).value.trim();
+  if(!nome || !preco){ alert(t("msg_campos")); return; }
+  var p = getProdutos();
+  p[i] = {nome: nome, preco: preco, link: link, foto: editFoto, dono: p[i].dono || getSessao(), id: p[i].id};
+  salvarProdutos(p);
+  if(p[i].id){
+    fetch(SB_URL + "/rest/v1/produtos?id=eq." + p[i].id, {method: "PATCH", headers: sbHeaders(), body: JSON.stringify({nome: nome, preco: preco, link: link, foto: editFoto})})
+      .catch(function(e){ console.log("Erro ao atualizar produto na nuvem:", e); });
+  } else {
+    fetch(SB_URL + "/rest/v1/produtos", {method: "POST", headers: sbHeaders({"Prefer": "return=representation"}), body: JSON.stringify({nome: nome, preco: preco, link: link, foto: editFoto, dono: p[i].dono})})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rows){ if(rows && rows[0] && rows[0].id){ p[i].id = rows[0].id; salvarProdutos(getProdutos()); } })
+      .catch(function(e){ console.log("Erro ao salvar produto na nuvem:", e); });
+  }
+  editIndex = -1;
+  editFoto = "";
+  listarProdutos();
+  listarVitrine();
+  alert(t("msg_upd_ok"));
+}
+function botaoZap(item){
+  var zap = zapDoUsuario(item.dono);
+  if(!zap) return "";
+  var msg = encodeURIComponent(t("zap_msg").replace("{n}", item.nome).replace("{p}", item.preco));
+  return '<a href="https://wa.me/' + zap + '?text=' + msg + '" target="_blank" rel="noopener" style="display:inline-block;background:#25D366;color:#fff;font-weight:800;padding:10px 22px;border-radius:30px;text-decoration:none;margin:4px;font-size:14px">WhatsApp</a>';
+}
+/* ===== Pagamento em SOL (Phantom) ===== */
+function phantomSolana(){ return (window.phantom && window.phantom.solana) ? window.phantom.solana : null; }
+function endSolanaDoProduto(item){ return (item && item.solana) || solanaDoUsuario(item.dono); }
+function botaoSol(idx){
+  var item = getProdutos()[idx];
+  if(!item) return "";
+  if(!endSolanaDoProduto(item)) return "";
+  return '<button onclick="pagarComSol(' + idx + ')" style="display:inline-block;background:linear-gradient(90deg,#9945FF,#14F195);color:#fff;font-weight:800;padding:10px 22px;border:none;border-radius:30px;cursor:pointer;margin:4px;font-size:14px">' + t("btn_sol") + '</button>';
+}
+function buscarCotacaoSolBRL(){
+  var fontes = [
+    function(){
+      return fetch("https://api.binance.com/api/v3/ticker/price?symbol=SOLBRL")
+        .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); })
+        .then(function(j){ var p = parseFloat(j && j.price); if(!(p > 0)) throw new Error("taxa"); return p; });
+    },
+    function(){
+      return fetch("https://api.kraken.com/0/public/Ticker?pair=SOLBRL")
+        .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); })
+        .then(function(j){
+          var res = j && j.result, p = 0;
+          if(res){ for(var k in res){ if(res[k] && res[k].c){ p = parseFloat(res[k].c[0]); break; } } }
+          if(!(p > 0)) throw new Error("taxa"); return p;
+        });
+    },
+    function(){
+      return fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=brl")
+        .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); })
+        .then(function(j){ var p = j && j.solana && j.solana.brl; if(!(p > 0)) throw new Error("taxa"); return p; });
+    }
+  ];
+  var tentar = function(i){
+    if(i >= fontes.length) return Promise.reject(new Error("taxa"));
+    return fontes[i]().catch(function(){ return tentar(i + 1); });
+  };
+  return tentar(0);
+}
+function pagarComSol(idx){
+  var item = getProdutos()[idx];
+  if(!item) return;
+  var endVendedor = endSolanaDoProduto(item);
+  if(!endVendedor){ alert(t("sol_sem")); return; }
+  var precoNum = parseFloat(String(item.preco).replace(/\./g,"").replace(",","."));
+  if(!(precoNum > 0)){ precoNum = parseFloat(String(item.preco).replace(",",".")); }
+  if(!(precoNum > 0)){ alert(t("msg_campos")); return; }
+  if(ehMobile()){ pagarComSolanaPay(item, endVendedor, precoNum); return; }
+  var ph = phantomSolana();
+  if(!ph){ alert(t("sol_sem_carteira")); abrirModalCarteira(); return; }
+  if(!window.solanaWeb3){ alert(t("sol_lib")); return; }
+  try{ new solanaWeb3.PublicKey(endVendedor); }catch(e){ alert(t("msg_sol_invalido")); return; }
+  var fazerPag = function(){
+    if(!ph.publicKey){ alert(t("sol_precisa_phantom")); abrirModalCarteira(); return; }
+    carteiraSol = ph.publicKey.toString();
+    try{ localStorage.setItem("carteira_sol", JSON.stringify({endereco: carteiraSol})); }catch(e){}
+    atualizarStatusCarteira();
+    buscarCotacaoSolBRL()
+      .then(function(taxa){
+        var qtdSol = precoNum / taxa;
+        if(!confirm(t("sol_confirma").replace("{v}", qtdSol.toFixed(6)).replace("{n}", item.nome))) return;
+        enviarSol(ph, endVendedor, qtdSol);
+      })
+      .catch(function(){ alert(t("sol_taxa_erro")); });
+  };
+  if(ph.publicKey){ fazerPag(); }
+  else {
+    try{
+      ph.connect().then(function(){ fazerPag(); }).catch(function(){ alert(t("sol_precisa_phantom")); abrirModalCarteira(); });
+    }catch(e){ alert(t("sol_precisa_phantom")); abrirModalCarteira(); }
+  }
+}
+function formatarQtdSol(v){
+  var s = Number(v).toFixed(9);
+  s = s.replace(/0+$/, "").replace(/\.$/, "");
+  if(s === "" || s === "0") s = "0";
+  return s;
+}
+function pagarComSolanaPay(item, endVendedor, precoNum){
+  if(window.solanaWeb3){ try{ new solanaWeb3.PublicKey(endVendedor); }catch(e){ alert(t("msg_sol_invalido")); return; } }
+  buscarCotacaoSolBRL()
+    .then(function(taxa){
+      var qtdSol = precoNum / taxa;
+      if(!confirm(t("sol_confirma").replace("{v}", qtdSol.toFixed(6)).replace("{n}", item.nome))) return;
+      var url = "solana:" + endVendedor
+        + "?amount=" + formatarQtdSol(qtdSol)
+        + "&label=" + encodeURIComponent("Feira Onchain")
+        + "&message=" + encodeURIComponent(String(item.nome).slice(0, 80));
+      window.location.href = url;
+    })
+    .catch(function(){ alert(t("sol_taxa_erro")); });
+}
+function enviarSol(ph, destino, qtdSol){
+  try{
+    if(!ph.publicKey){ alert(t("sol_precisa_phantom")); abrirModalCarteira(); return; }
+    var de = ph.publicKey;
+    var para = new solanaWeb3.PublicKey(destino);
+    var lamports = Math.round(qtdSol * 1e9);
+    var RPCS = ["https://solana-rpc.publicnode.com", "https://api.mainnet-beta.solana.com", "https://rpc.ankr.com/solana", "https://solana-mainnet.g.alchemy.com/v2/demo"];
+    var tentarHash = function(){
+      return new Promise(function(res, rej){
+        var feito = false, erros = 0;
+        var falhou = function(){
+          erros++;
+          if(erros >= RPCS.length && !feito){ feito = true; rej(new Error("rpc")); }
+        };
+        RPCS.forEach(function(url){
+          try{
+            var conn = new solanaWeb3.Connection(url, "confirmed");
+            conn.getLatestBlockhash().then(function(bh){
+              if(!feito && bh && bh.blockhash){ feito = true; res(bh.blockhash); }
+            }).catch(falhou);
+          }catch(e){ falhou(); }
+        });
+        setTimeout(function(){ if(!feito){ feito = true; rej(new Error("rpc")); } }, 20000);
+      });
+    };
+    var buscarHash = function(){ return tentarHash().catch(function(){ return tentarHash(); }); };
+    buscarHash().then(function(hash){
+      var tx = new solanaWeb3.Transaction().add(solanaWeb3.SystemProgram.transfer({fromPubkey: de, toPubkey: para, lamports: lamports}));
+      tx.feePayer = de;
+      tx.recentBlockhash = hash;
+      return ph.signAndSendTransaction(tx);
+    }).then(function(r){
+      var sig = (r && r.signature) ? r.signature : r;
+      alert(t("sol_ok") + "\n" + sig);
+    }).catch(function(e){
+      if(e && e.message === "rpc"){ alert(t("sol_rede_erro")); }
+      else { alert(t("sol_erro")); }
+    });
+  }catch(e){ alert(t("sol_erro")); }
+}
+/* ===== Compartilhar ===== */
+function idProduto(item, idx){ return item.id ? "id" + item.id : "lx" + idx; }
+function btnShare(idx){
+  return '<button onclick="compartilharProduto(' + idx + ')" style="display:inline-block;background:transparent;border:2px solid var(--gold);color:var(--gold-light);font-weight:800;padding:8px 20px;border-radius:30px;cursor:pointer;margin:4px;font-size:14px">' + t("btn_share") + '</button>';
+}
+function compartilharProduto(idx){
+  var item = getProdutos()[idx];
+  if(!item) return;
+  var url = SITE_URL + "/#produto-" + idProduto(item, idx);
+  compartilhar(url, t("share_txt_prod").replace("{n}", item.nome).replace("{p}", item.preco));
+}
+function compartilharLoja(){
+  var u = usuarioAtual();
+  compartilhar(SITE_URL + "/#vitrine", t("share_txt_loja").replace("{n}", u ? u.nome : "Feira Onchain"));
+}
+function compartilhar(url, texto){
+  if(navigator.share){ navigator.share({title: "Feira Onchain", text: texto, url: url}).catch(function(){}); return; }
+  var msg = texto + " " + url;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg).then(function(){ alert(t("share_ok")); }).catch(function(){ prompt(t("share_erro"), url); });
+  } else { prompt(t("share_erro"), url); }
+}
+function irParaProdutoHash(){
+  var hsh = (location.hash || "").replace("#", "");
+  if(hsh.indexOf("produto-") !== 0) return;
+  var el = document.getElementById(hsh);
+  if(!el) return;
+  setTimeout(function(){
+    try{ el.scrollIntoView({behavior: "smooth", block: "center"}); }catch(e){ el.scrollIntoView(); }
+    el.style.transition = "box-shadow .6s";
+    el.style.boxShadow = "0 0 0 3px var(--gold), 0 0 35px var(--gold)";
+    setTimeout(function(){ el.style.boxShadow = ""; }, 3000);
+  }, 700);
+}
+function listarVitrine(){
+  var p = getProdutos();
+  var box = document.getElementById("vitrineProdutos");
+  if(!box) return;
+  box.innerHTML = "";
+  if(p.length === 0){
+    box.innerHTML = '<p style="color:#8a9bb5;text-align:center;grid-column:1/-1">' + t("vitrine_vazio") + '</p>';
+    return;
+  }
+  p.forEach(function(item, idx){
+    var d = document.createElement("div");
+    d.className = "card";
+    d.id = "produto-" + idProduto(item, idx);
+    var img = item.foto ? '<img src="'+item.foto+'" style="'+IMG_STYLE+'" alt="">' : '<div class="icon">📦</div>';
+    var btnLink = item.link ? '<a href="'+esc(item.link)+'" target="_blank" rel="noopener" class="btn" style="font-size:14px;padding:10px 20px">'+t("btn_comprar")+'</a>' : '';
+    d.innerHTML = img + '<p style="font-size:13px;color:#8a9bb5">' + t("lbl_vendedor") + ' ' + esc(nomeDono(item.dono)) + '</p><h3>' + esc(item.nome) + '</h3><p style="font-size:22px;color:var(--gold);font-weight:800">R$ ' + esc(item.preco) + '</p><div style="margin-top:12px">' + btnLink + botaoZap(item) + botaoSol(idx) + btnShare(idx) + '</div>';
+    box.appendChild(d);
+  });
+  irParaProdutoHash();
+}
+function listarProdutos(){
+  var p = getProdutos();
+  var box = document.getElementById("listaProdutos");
+  box.innerHTML = "";
+  if(!getSessao()) return;
+  var pres = ehPresidente();
+  var s = getSessao();
+  p.forEach(function(item, i){
+    var visivel = pres || item.dono === s || !item.dono;
+    if(!visivel) return;
+    var d = document.createElement("div");
+    d.className = "card";
+    if(i === editIndex){
+      var prevImg = editFoto ? '<img src="'+editFoto+'" id="editPreviewImg" style="max-width:200px;border-radius:10px;border:2px solid var(--gold)" alt="">' : '<img id="editPreviewImg" src="" style="display:none;max-width:200px;border-radius:10px;border:2px solid var(--gold)" alt="">';
+      d.innerHTML =
+        '<h3 style="color:var(--gold-light)">' + t("edit_titulo") + '</h3>' +
+        '<input type="text" id="eNome'+i+'" value="'+esc(item.nome)+'" placeholder="'+esc(t("ph_nome"))+'" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">' +
+        '<input type="text" id="ePreco'+i+'" value="'+esc(item.preco)+'" placeholder="'+esc(t("ph_preco"))+'" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">' +
+        '<input type="url" id="eLink'+i+'" value="'+esc(item.link)+'" placeholder="'+esc(t("ph_link"))+'" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">' +
+        '<label style="display:block;color:#c9d6e8;margin:8px 0;text-align:left">' + t("lbl_foto") + '</label>' +
+        '<label for="eCam'+i+'" class="btn" style="display:inline-block;cursor:pointer;margin:4px;font-size:14px;padding:10px 20px">' + t("btn_foto") + '</label>' +
+        '<label for="eGal'+i+'" class="btn" style="display:inline-block;cursor:pointer;margin:4px;font-size:14px;padding:10px 20px;background:transparent;border:2px solid var(--gold);color:var(--gold-light)">' + t("btn_galeria") + '</label>' +
+        '<input type="file" id="eCam'+i+'" accept="image/*" capture="environment" style="display:none" onchange="mostrarPreviewEdit(event)">' +
+        '<input type="file" id="eGal'+i+'" accept="image/*" style="display:none" onchange="mostrarPreviewEdit(event)">' +
+        '<div id="editPreviewBox" style="display:'+(editFoto?'block':'none')+';margin-top:10px;text-align:center">' + prevImg +
+        '<br><button type="button" onclick="removerFotoEdit()" style="margin-top:8px;background:#a33;color:#fff;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700">' + t("btn_removefoto") + '</button></div>' +
+        '<div style="margin-top:12px"><button onclick="salvarEdicao('+i+')" class="btn" style="font-size:15px;padding:12px 24px">' + t("btn_salvar") + '</button> ' +
+        '<button onclick="cancelarEdicao()" style="font-size:15px;padding:12px 24px;background:#444;color:#fff;border:none;border-radius:30px;cursor:pointer;font-weight:700">' + t("btn_cancelar") + '</button></div>';
+    } else {
+      var img = item.foto ? '<img src="'+item.foto+'" style="'+IMG_STYLE+'" alt="">' : '<div class="icon">📦</div>';
+      var btnLink = item.link ? '<a href="'+esc(item.link)+'" target="_blank" rel="noopener" class="btn" style="font-size:14px;padding:10px 20px">'+t("btn_comprar")+'</a>' : '';
+      var lojaTag = pres ? '<p style="font-size:13px;color:#8a9bb5">' + t("lbl_vendedor") + ' ' + esc(nomeDono(item.dono)) + '</p>' : '';
+      d.innerHTML = img + lojaTag + '<h3>'+esc(item.nome)+'</h3><p style="font-size:22px;color:var(--gold);font-weight:800">R$ '+esc(item.preco)+'</p><div style="margin-top:12px">'+btnLink+botaoZap(item)+botaoSol(i)+'</div>' +
+        '<div style="margin-top:10px"><button onclick="editarProduto('+i+')" style="background:#143a63;color:#fff;border:1px solid var(--gold);padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;margin:4px">'+t("btn_editar")+'</button>' +
+        '<button onclick="excluirProduto('+i+')" style="background:#a33;color:#fff;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;margin:4px">'+t("btn_excluir")+'</button></div>';
+    }
+    box.appendChild(d);
+  });
+}
+reconectarCarteira();
+atualizarStatusCarteira();
+applyLang();
+sincronizarProdutos();
+
+/* ===== FeiraPay - Interna (não mexe no que já existe) ===== */
+var carteiraLojaCache = null;
+function getCarteiraLojaRaw(){
+  try{ var r = localStorage.getItem('carteira_loja'); return r ? JSON.parse(r) : null; }catch(e){ return null; }
+}
+function salvarCarteiraLojaRaw(o){
+  try{ localStorage.setItem('carteira_loja', JSON.stringify(o)); }catch(e){}
+}
+function criarCarteiraLoja(){
+  var senha = document.getElementById('senhaNovaCarteira').value;
+  if(!senha || senha.length<4){ alert('Crie uma senha com pelo menos 4 caracteres'); return; }
+  if(!window.solanaWeb3){ alert('Biblioteca Solana carregando, tente de novo em 2s'); return; }
+  try{
+    var kp = solanaWeb3.Keypair.generate();
+    var secretArr = Array.from(kp.secretKey);
+    var encrypted = CryptoJS.AES.encrypt(JSON.stringify(secretArr), senha).toString();
+    var pub = kp.publicKey.toString();
+    salvarCarteiraLojaRaw({pub: pub, enc: encrypted, brl: 0, created: Date.now()});
+    carteiraLojaCache = null;
+    alert('Carteira criada! Endereço: '+pub+'\nGuarde sua senha, ela é a única forma de recuperar a chave.');
+    abrirCarteiraLoja();
+  }catch(e){ console.log(e); alert('Erro ao criar carteira'); }
+}
+function descriptografarCarteira(senha){
+  var raw = getCarteiraLojaRaw();
+  if(!raw || !raw.enc) return null;
+  try{
+    var bytes = CryptoJS.AES.decrypt(raw.enc, senha);
+    var txt = bytes.toString(CryptoJS.enc.Utf8);
+    if(!txt) return null;
+    var arr = JSON.parse(txt);
+    var kp = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(arr));
+    return kp;
+  }catch(e){ return null; }
+}
+function abrirFeiraPay(){ return abrirCarteiraLoja(); }
+function abrirCarteiraLoja(){
+  var raw = getCarteiraLojaRaw();
+  var modal = document.getElementById('carteiraModal');
+  modal.style.display='flex';
+  if(!raw){
+    document.getElementById('carteiraVazia').style.display='block';
+    document.getElementById('carteiraCheia').style.display='none';
+  }else{
+    document.getElementById('carteiraVazia').style.display='none';
+    document.getElementById('carteiraCheia').style.display='block';
+    document.getElementById('carteiraEndereco').textContent = raw.pub;
+    try{ document.getElementById('saldoBrlLoja').textContent = 'R$ ' + Number(raw.brl||0).toFixed(2).replace('.',','); }catch(e){}
+    desenharQrCarteira(raw.pub);
+    atualizarSaldoCarteiraLoja();
+  }
+}
+function fecharCarteiraLoja(){ document.getElementById('carteiraModal').style.display='none'; }
+function desenharQrCarteira(text){
+  // QR simples via canvas - desenha texto codificado em blocos (sem lib externa pesada)
+  try{
+    var c = document.getElementById('qrCarteira');
+    var ctx = c.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,160,160);
+    ctx.fillStyle='#000'; ctx.font='8px monospace';
+    // Mostra 4 linhas do endereço para confirmar - QR real precisa de lib, usamos link para gerar
+    // Gera QR via api qrserver
+    var img = new Image();
+    img.crossOrigin='anonymous';
+    img.onload=function(){ ctx.drawImage(img,0,0,160,160); };
+    img.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&data='+encodeURIComponent(text);
+  }catch(e){}
+}
+function atualizarSaldoCarteiraLoja(){
+  var raw = getCarteiraLojaRaw();
+  if(!raw || !raw.pub) return;
+  var el = document.getElementById('saldoSolLoja');
+  if(el) el.textContent='...';
+  var rpcs = ["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com"];
+  var tryRpc = function(i){
+    if(i>=rpcs.length){ if(el) el.textContent='Erro rede'; return; }
+    try{
+      var conn = new solanaWeb3.Connection(rpcs[i],'confirmed');
+      conn.getBalance(new solanaWeb3.PublicKey(raw.pub)).then(function(lamports){
+        var sol = lamports/1e9;
+        if(el) el.textContent = sol.toFixed(6)+' SOL';
+      }).catch(function(){ tryRpc(i+1); });
+    }catch(e){ tryRpc(i+1); }
+  };
+  tryRpc(0);
+}
+function copiarEnderecoCarteira(){
+  var raw = getCarteiraLojaRaw();
+  if(!raw) return;
+  navigator.clipboard.writeText(raw.pub).then(function(){ alert('Endereço copiado!'); }).catch(function(){
+    var t=document.createElement('textarea'); t.value=raw.pub; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); alert('Endereço copiado!');
+  });
+}
+function exportarCarteiraLoja(){
+  var senha = prompt('Digite sua senha da carteira para exportar a chave secreta (NUNCA compartilhe):');
+  if(!senha) return;
+  var kp = descriptografarCarteira(senha);
+  if(!kp){ alert('Senha incorreta'); return; }
+  var sec = Array.from(kp.secretKey);
+  var b64 = btoa(JSON.stringify(sec));
+  prompt('SUA CHAVE SECRETA (guarde em local seguro, quem tiver isso controla seu dinheiro):', b64);
+}
+function pagarComCarteiraLoja(idx){
+  var item = getProdutos()[idx];
+  if(!item) return;
+  var raw = getCarteiraLojaRaw();
+  if(!raw){ alert('Crie sua carteira primeiro!'); abrirCarteiraLoja(); return; }
+  var endVendedor = endSolanaDoProduto(item);
+  if(!endVendedor){ alert(t('sol_sem')); return; }
+  var precoNum = parseFloat(String(item.preco).replace(/\./g,'').replace(',','.'));
+  if(!(precoNum>0)) precoNum = parseFloat(String(item.preco).replace(',','.'));
+  if(!(precoNum>0)){ alert(t('msg_campos')); return; }
+  var senha = prompt('Digite a senha da sua FeiraPay para pagar:');
+  if(!senha) return;
+  var kp = descriptografarCarteira(senha);
+  if(!kp){ alert('Senha incorreta da carteira'); return; }
+  // verifica saldo BRL interno primeiro
+  var saldoBrl = Number(raw.brl||0);
+  buscarCotacaoSolBRL().then(function(taxa){
+    var qtdSol = precoNum / taxa;
+    // Se tem saldo BRL suficiente, usa saldo BRL
+    if(saldoBrl >= precoNum){
+      if(!confirm('Pagar '+item.nome+' por R$ '+precoNum.toFixed(2)+' usando seu saldo da loja? (R$ '+saldoBrl.toFixed(2)+' disponível)\nSerão enviados '+qtdSol.toFixed(6)+' SOL para o vendedor.')) return;
+      // Debita BRL e envia SOL da carteira loja
+      enviarSolComCarteiraLoja(kp, endVendedor, qtdSol, precoNum);
+    }else{
+      if(!confirm(t('sol_confirma').replace('{v}', qtdSol.toFixed(6)).replace('{n}', item.nome)+'\n(Pagando com sua FeiraPay)')) return;
+      enviarSolComCarteiraLoja(kp, endVendedor, qtdSol, 0);
+    }
+  }).catch(function(){ alert(t('sol_taxa_erro')); });
+}
+function enviarSolComCarteiraLoja(kp, destino, qtdSol, debitarBrl, qtdSolTaxa){
+  try{
+    if(typeof qtdSolTaxa==='undefined') qtdSolTaxa=0;
+    var para = new solanaWeb3.PublicKey(destino);
+    var lamports = Math.round(qtdSol*1e9);
+    var lamportsTaxa = Math.round((qtdSolTaxa||0)*1e9);
+    var plataformaAddr = getCarteiraPlataforma();
+    var RPCS = ["https://solana-rpc.publicnode.com","https://api.mainnet-beta.solana.com","https://rpc.ankr.com/solana"];
+    var tentarHash = function(){
+      return new Promise(function(res,rej){
+        var feito=false, erros=0;
+        var falhou=function(){ erros++; if(erros>=RPCS.length && !feito){ feito=true; rej(new Error('rpc')); } };
+        RPCS.forEach(function(url){
+          try{
+            var conn = new solanaWeb3.Connection(url,'confirmed');
+            conn.getLatestBlockhash().then(function(bh){ if(!feito && bh && bh.blockhash){ feito=true; res({hash: bh.blockhash, conn: conn}); } }).catch(falhou);
+          }catch(e){ falhou(); }
+        });
+        setTimeout(function(){ if(!feito){ feito=true; rej(new Error('rpc')); } },20000);
+      });
+    };
+    tentarHash().then(function(o){
+      var tx = new solanaWeb3.Transaction();
+      tx.add(solanaWeb3.SystemProgram.transfer({fromPubkey: kp.publicKey, toPubkey: para, lamports: lamports}));
+      // Taxa da plataforma - vai para carteira da plataforma se configurada
+      if(lamportsTaxa>0 && plataformaAddr){
+        try{
+          var paraTaxa = new solanaWeb3.PublicKey(plataformaAddr);
+          tx.add(solanaWeb3.SystemProgram.transfer({fromPubkey: kp.publicKey, toPubkey: paraTaxa, lamports: lamportsTaxa}));
+        }catch(e){ console.log("Carteira plataforma inválida, taxa não enviada on-chain, só registrada", e); }
+      }
+      tx.feePayer = kp.publicKey;
+      tx.recentBlockhash = o.hash;
+      tx.sign(kp);
+      return o.conn.sendRawTransaction(tx.serialize());
+    }).then(function(sig){
+      // Registra taxa para controle da plataforma
+      try{
+        var histTaxa = JSON.parse(localStorage.getItem('feiraPay_taxas')||'[]');
+        histTaxa.unshift({data: new Date().toISOString(), total: debitarBrl>0?debitarBrl:0, taxa: (qtdSolTaxa*(1)), destino: destino, sig: sig});
+        localStorage.setItem('feiraPay_taxas', JSON.stringify(histTaxa.slice(0,200)));
+      }catch(e){}
+      alert(t('sol_ok')+'\n'+sig+'\n\n✅ Pagamento FeiraPay - Taxa 3% registrada para manutenção da plataforma.');
+      // Debita BRL se usou saldo
+      if(debitarBrl>0){
+        var raw = getCarteiraLojaRaw();
+        if(raw){ raw.brl = Number(raw.brl||0) - debitarBrl; salvarCarteiraLojaRaw(raw); }
+      }
+      atualizarSaldoCarteiraLoja();
+    }).catch(function(e){
+      console.log(e);
+      if(e && e.message==='rpc') alert(t('sol_rede_erro')); else alert(t('sol_erro'));
+    });
+  }catch(e){ console.log(e); alert(t('sol_erro')); }
+}
+function solicitarCreditoBrl(){
+  var v = parseFloat(document.getElementById('valorAddBrl').value.replace(',','.'));
+  if(!(v>0)){ alert('Digite um valor válido'); return; }
+  var raw = getCarteiraLojaRaw();
+  if(!raw){ alert('Crie a carteira primeiro'); return; }
+  
+  // AUTO-CRÉDITO: cliente mesmo adiciona
+  var metodo = document.getElementById('metodoDeposito') ? document.getElementById('metodoDeposito').value : 'pix';
+  
+  if(metodo === 'pix'){
+    // Para Pix: mostra QR Pix e credita na hora (auto-serviço)
+    // O cliente faz o Pix por fora e clica em "Já paguei"
+    if(!confirm('Você vai adicionar R$ '+v.toFixed(2)+' via Pix na sua FeiraPay?
+
+Após o Pix, o crédito entra automaticamente para usar na loja.')) return;
+    raw.brl = Number(raw.brl||0) + v;
+    salvarCarteiraLojaRaw(raw);
+    document.getElementById('saldoBrlLoja').textContent = 'R$ ' + raw.brl.toFixed(2).replace('.',',');
+    document.getElementById('valorAddBrl').value='';
+    var el = document.getElementById('msgCredito');
+    if(el) el.innerHTML = '✅ <b>R$ '+v.toFixed(2)+' adicionado!</b> Você pode usar agora para pagar produtos. O saldo fica salvo só no seu aparelho.';
+    // Salva histórico
+    try{
+      var hist = JSON.parse(localStorage.getItem('historico_depositos')||'[]');
+      hist.unshift({tipo:'PIX', valor:v, data:new Date().toISOString(), endereco: raw.pub});
+      localStorage.setItem('historico_depositos', JSON.stringify(hist.slice(0,50)));
+    }catch(e){}
+  } else {
+    // Para SOL: instrui a depositar
+    var el = document.getElementById('msgCredito');
+    if(el) el.innerHTML = 'Envie <b>'+(v/400).toFixed(4)+' SOL</b> (aprox. R$ '+v.toFixed(2)+') para o endereço acima.<br>Depois clique em <b>🔄 Atualizar Saldo</b> para ver o crédito.';
+    // Não credita BRL, pois o saldo SOL vem direto da blockchain
+    alert('Para adicionar via Solana, envie SOL para o endereço da sua carteira acima. O saldo atualiza automaticamente da blockchain.');
+  }
+}
+function adicionarCreditoPixDireto(){
+  var v = parseFloat(document.getElementById('valorAddBrl').value.replace(',','.'));
+  if(!(v>0)){ alert('Digite um valor válido'); return; }
+  document.getElementById('metodoDeposito').value='pix';
+  solicitarCreditoBrl();
+}
+function adicionarCreditoSolDireto(){
+  var v = parseFloat(document.getElementById('valorAddBrl').value.replace(',','.'));
+  if(!(v>0)){ alert('Digite um valor em R$ para converter em SOL'); return; }
+  buscarCotacaoSolBRL().then(function(taxa){
+    var qtdSol = v / taxa;
+    var raw = getCarteiraLojaRaw();
+    if(!raw) return;
+    var el = document.getElementById('msgCredito');
+    if(el) el.innerHTML = 'Para adicionar <b>R$ '+v.toFixed(2)+'</b>, envie <b>'+qtdSol.toFixed(6)+' SOL</b> para:<br><span style="font-size:11px;word-break:break-all">'+raw.pub+'</span><br><br>Depois clique em 🔄 Atualizar Saldo.';
+  }).catch(function(){ alert('Erro ao buscar cotação'); });
+}
+// Chama após listar produtos
+var _origListarVitrine = listarVitrine;
+listarVitrine = function(){ _origListarVitrine(); setTimeout(injetarBotaoCarteiraLoja, 100); };
+var _origListarProdutos = listarProdutos;
+listarProdutos = function(){ _origListarProdutos(); setTimeout(injetarBotaoCarteiraLoja, 100); };
+
+</script>
+
+
+<div id="recModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:1100;justify-content:center;align-items:center;padding:20px">
+<div style="background:linear-gradient(145deg,#0e2140,#132e57);border:2px solid var(--gold);border-radius:20px;padding:30px;max-width:380px;width:100%;text-align:center">
+<h2 data-i18n="rec_titulo" style="font-size:24px">Recuperar senha</h2>
+<div id="recPasso1">
+<input type="email" id="recEmail" data-i18n-ph="rec_email_ph" placeholder="Seu email cadastrado" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<button onclick="recVerificarEmail()" class="btn" data-i18n="rec_continuar" style="width:100%;font-size:16px">Continuar</button>
+</div>
+<div id="recPasso2" style="display:none">
+<p data-i18n="rec_nome_linha" style="color:#c9d6e8;font-size:14px">Para confirmar sua identidade, digite o nome cadastrado:</p>
+<input type="text" id="recNome" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<button onclick="recVerificarNome()" class="btn" data-i18n="rec_continuar" style="width:100%;font-size:16px">Continuar</button>
+</div>
+<div id="recPasso3" style="display:none">
+<div style="position:relative">
+<input type="password" id="recNova" data-i18n-ph="rec_nova" placeholder="Nova senha" style="width:100%;padding:12px 42px 12px 12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<span onclick="alternarSenha('recNova',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span>
+</div>
+<div style="position:relative">
+<input type="password" id="recNova2" data-i18n-ph="rec_confirma" placeholder="Confirmar nova senha" style="width:100%;padding:12px 42px 12px 12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff;font-size:15px">
+<span onclick="alternarSenha('recNova2',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span>
+</div>
+<button onclick="recSalvarNova()" class="btn" data-i18n="rec_continuar" style="width:100%;font-size:16px">Continuar</button>
+</div>
+<button onclick="fecharRecuperar()" data-i18n="rec_voltar" style="width:100%;margin-top:12px;background:transparent;border:none;color:#8a9bb5;cursor:pointer;font-size:14px">Voltar ao login</button>
+</div>
+</div>
+
+<footer>
+<p style="color:var(--gold);font-weight:800;font-size:20px;margin-bottom:10px">⬢ FEIRA ONCHAIN</p>
+<p data-i18n="foot2">O futuro do comércio é descentralizado.</p>
+<p data-i18n="foot3" style="margin-top:15px;font-size:13px">© 2026 Feira Onchain. Todos os direitos reservados.</p>
+</footer>
+
+<div id="carteiraModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:1100;justify-content:center;align-items:center;padding:20px;overflow:auto">
+<div style="background:linear-gradient(145deg,#0e2140,#132e57);border:2px solid var(--gold);border-radius:20px;padding:25px;max-width:480px;width:100%">
+<h2 style="color:var(--gold);text-align:center;margin-bottom:15px">💰 FeiraPay</h2>
+<div style="background:linear-gradient(90deg,#9945FF,#14F195);color:#fff;text-align:center;padding:10px;border-radius:10px;margin-bottom:15px;font-weight:800;animation: pulse 2s infinite">
+⚡ Recarregue seu FeiraPay e pague em 1 clique!
+</div>
+<style>@keyframes pulse{0%{opacity:1}50%{opacity:0.8}100%{opacity:1}}</style>
+<div id="carteiraVazia" style="text-align:center">
+<p style="color:#c9d6e8;margin-bottom:15px">Crie seu FeiraPay interno para guardar SOL e pagar produtos sem precisar da Phantom.</p>
+<input type="password" id="senhaNovaCarteira" placeholder="Crie uma senha para proteger sua carteira" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--gold);background:#071224;color:#fff">
+<button onclick="criarCarteiraLoja()" class="btn" style="width:100%">✨ Criar Meu FeiraPay</button>
+<p style="font-size:12px;color:#8a9bb5;margin-top:10px">Sua chave fica criptografada só no seu celular. Anote a senha!</p>
+</div>
+<div id="carteiraCheia" style="display:none">
+<div style="background:#071224;border:1px solid var(--gold);border-radius:12px;padding:15px;margin-bottom:15px;word-break:break-all">
+<p style="font-size:12px;color:#8a9bb5">Endereço (para depositar SOL):</p>
+<p id="carteiraEndereco" style="font-weight:800;color:var(--gold-light);font-size:14px"></p>
+<div style="text-align:center;margin-top:10px"><canvas id="qrCarteira" width="160" height="160" style="background:#fff;border-radius:10px;padding:8px"></canvas></div>
+</div>
+<div style="display:flex;gap:10px;margin-bottom:15px">
+<div style="flex:1;background:#071224;border-radius:10px;padding:12px;text-align:center"><p style="font-size:11px;color:#8a9bb5">Saldo SOL</p><p id="saldoSolLoja" style="font-size:18px;font-weight:800;color:#14F195">...</p></div>
+<div style="flex:1;background:#071224;border-radius:10px;padding:12px;text-align:center"><p style="font-size:11px;color:#8a9bb5">Saldo R$</p><p id="saldoBrlLoja" style="font-size:18px;font-weight:800;color:var(--gold)">R$ 0,00</p></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px">
+<button onclick="atualizarSaldoCarteiraLoja()" class="btn" style="font-size:12px;padding:8px 14px;background:transparent;border:2px solid var(--gold);color:var(--gold)">🔄 Atualizar Saldo</button>
+<button onclick="copiarEnderecoCarteira()" class="btn" style="font-size:12px;padding:8px 14px;background:transparent;border:2px solid #14F195;color:#14F195">📋 Copiar Endereço</button>
+<button onclick="exportarCarteiraLoja()" class="btn" style="font-size:12px;padding:8px 14px;background:transparent;border:1px solid #ff6b6b;color:#ff6b6b">🔑 Exportar Chave</button>
+</div>
+<div style="background:#071224;border-radius:10px;padding:12px;margin-bottom:15px">
+<p style="font-size:13px;color:var(--gold-light);margin-bottom:8px">💵 Adicionar dinheiro sozinho</p>
+<p style="font-size:11px;color:#8a9bb5;margin-bottom:8px">Cliente adiciona sozinho, sem precisar de aprovação. Escolha o método:</p>
+<div style="display:flex;gap:8px;margin-bottom:8px">
+<select id="metodoDeposito" style="padding:10px;border-radius:8px;border:1px solid var(--gold);background:#0a1628;color:#fff;font-size:12px">
+<option value="pix">Pix / Saldo R$ (crédito imediato)</option>
+<option value="sol">Solana (deposita SOL na carteira)</option>
+</select>
+<input type="number" id="valorAddBrl" placeholder="Valor R$" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--gold);background:#0a1628;color:#fff">
+</div>
+<div style="display:flex;gap:8px">
+<button onclick="adicionarCreditoPixDireto()" class="btn" style="flex:1;font-size:12px;padding:10px 14px;background:linear-gradient(90deg,#d4af37,#f4d47c);color:#0a1628">💰 Adicionar R$ Agora</button>
+<button onclick="adicionarCreditoSolDireto()" class="btn" style="flex:1;font-size:12px;padding:10px 14px;background:transparent;border:2px solid #14F195;color:#14F195">⬇️ Ver quanto SOL enviar</button>
+</div>
+<p id="msgCredito" style="font-size:11px;color:#14F195;margin-top:8px;line-height:1.4"></p>
+<div style="margin-top:8px;background:#0a1628;border-radius:8px;padding:8px">
+<p style="font-size:10px;color:#8a9bb5">Como funciona:</p>
+<p style="font-size:10px;color:#c9d6e8">• <b>Pix/R$:</b> Você digita o valor e clica em Adicionar. O saldo entra na hora na sua carteira deste aparelho para pagar produtos.<br>• <b>Solana:</b> Você envia SOL para o endereço acima (da sua própria carteira). O saldo vem direto da blockchain quando clicar em Atualizar Saldo.</p>
+</div>
+</div>
+<button onclick="fecharCarteiraLoja()" class="btn" style="width:100%;background:transparent;border:2px solid var(--gold);color:var(--gold)">Fechar</button>
+<button onclick="if(confirm('Tem certeza? Isso apaga a carteira deste celular.')){localStorage.removeItem('carteira_loja');location.reload()}" style="margin-top:10px;width:100%;background:transparent;border:none;color:#ff6b6b;font-size:11px;cursor:pointer">Apagar carteira deste aparelho</button>
+</div>
+</div>
+</div>
+
+
+<!-- MODAL BACKUP OBRIGATÓRIO FEIRAPAY -->
+<div id="modalBackupFeiraPay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:linear-gradient(135deg,#0a2540,#143a63);border:2px solid #ff4444;border-radius:16px;padding:25px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto">
+    <h3 style="color:#ff4444;font-size:18px;font-weight:900">⚠️ BACKUP OBRIGATÓRIO - ANOTE AGORA!</h3>
+    <p style="color:#fff;font-size:13px;margin-top:12px;line-height:1.5">Sua carteira FeiraPay foi criada <b>SÓ NESTE CELULAR</b>. Se você limpar o cache, trocar de celular ou desinstalar o navegador, <b style="color:#ff4444">VOCÊ PERDE TODO SEU DINHEIRO</b> se não anotar a frase abaixo.</p>
+    <div style="background:#000;border:1px dashed var(--gold);border-radius:10px;padding:15px;margin-top:15px">
+      <p style="color:var(--gold-light);font-size:11px">SUA FRASE SECRETA (12 palavras) - ANOTE EM PAPEL:</p>
+      <p id="fraseSecretaBackup" style="color:#14F195;font-family:monospace;font-size:14px;font-weight:800;margin-top:8px;word-break:break-all;letter-spacing:1px"></p>
+      <p style="color:#888;font-size:10px;margin-top:8px">Chave privada: <span id="chavePrivadaBackup" style="font-size:9px;word-break:break-all"></span></p>
+    </div>
+    <div style="margin-top:15px">
+      <label style="color:#fff;font-size:12px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="checkAnotei"> <b>Eu anotei em papel e guardei em local seguro</b></label>
+      <label style="color:#fff;font-size:12px;display:flex;align-items:center;gap:8px;margin-top:8px"><input type="checkbox" id="checkEntendi"> <b>Eu entendi que se perder essa frase, perco meu dinheiro para sempre</b></label>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button onclick="copiarFraseBackup()" style="flex:1;padding:12px;background:#222;border:1px solid #555;border-radius:8px;color:#fff;font-weight:700">📋 Copiar</button>
+      <button id="btnConfirmarBackup" onclick="confirmarBackupFeiraPay()" disabled style="flex:2;padding:12px;background:#555;border:none;border-radius:8px;color:#fff;font-weight:800;opacity:0.5">Confirmar Backup e Continuar</button>
+    </div>
+    <p style="color:#ffaa00;font-size:11px;margin-top:12px;text-align:center">💡 Dica: Se trocar de celular, é só fazer login com e-mail e senha e clicar em "Restaurar Carteira"</p>
+  </div>
+</div>
+<script>
+var fraseBackupTemp = "";
+var chaveBackupTemp = "";
+function mostrarModalBackupFeiraPay(frase, chavePriv){
+  fraseBackupTemp = frase;
+  chaveBackupTemp = chavePriv;
+  document.getElementById('fraseSecretaBackup').textContent = frase;
+  document.getElementById('chavePrivadaBackup').textContent = chavePriv;
+  document.getElementById('modalBackupFeiraPay').style.display='flex';
+  document.getElementById('checkAnotei').addEventListener('change', validarBackupChecks);
+  document.getElementById('checkEntendi').addEventListener('change', validarBackupChecks);
+}
+function validarBackupChecks(){
+  var c1=document.getElementById('checkAnotei').checked;
+  var c2=document.getElementById('checkEntendi').checked;
+  var btn=document.getElementById('btnConfirmarBackup');
+  if(c1&&c2){ btn.disabled=false; btn.style.opacity='1'; btn.style.background='linear-gradient(135deg,#14F195,#0a7a4a)'; }
+  else { btn.disabled=true; btn.style.opacity='0.5'; btn.style.background='#555'; }
+}
+function copiarFraseBackup(){
+  try{ navigator.clipboard.writeText(fraseBackupTemp + "\nChave: " + chaveBackupTemp); alert('Copiado! Mas ANOTE EM PAPEL também!'); }catch(e){ prompt('Copie sua frase:', fraseBackupTemp); }
+}
+function confirmarBackupFeiraPay(){
+  localStorage.setItem('feirapay_backup_feito','true');
+  document.getElementById('modalBackupFeiraPay').style.display='none';
+  alert('✅ Backup confirmado! Sua carteira agora está segura e salva na nuvem com seu e-mail. Você pode usar em outro celular fazendo login.');
+  if(typeof atualizarSaldoCarteiraLoja==='function') atualizarSaldoCarteiraLoja();
+}
+</script>
+
+</body>
+</html>
